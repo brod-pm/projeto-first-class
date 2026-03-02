@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Supervisão de Campo – First Class</title>
+  <style>
+    :root {
+      --fc-gold: #c9a84c;
+      --fc-dark: #1a1a2e;
+      --fc-mid: #2d2d44;
+      --fc-light: #f7f4ee;
+      --ok: #2e7d32;
+      --notok: #c62828;
+      --na: #757575;
+      --border: #ddd;
+      --radius: 8px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--fc-light); color: #222; -webkit-text-size-adjust: 100%; }
+    button, label, input, select, textarea { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+
+    header {
+      background: var(--fc-dark); color: #fff;
+      padding: 16px 24px; display: flex; align-items: center; gap: 14px;
+      border-bottom: 4px solid var(--fc-gold);
+    }
+    .logo-box {
+      width: 46px; height: 46px; background: var(--fc-gold); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; font-weight: 900; color: var(--fc-dark); flex-shrink: 0;
+    }
+    header h1 { font-size: 18px; font-weight: 700; }
+    header p  { font-size: 12px; color: #bbb; }
+
+    #score-bar {
+      background: var(--fc-mid); color: #fff; padding: 10px 24px;
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+      border-bottom: 2px solid var(--fc-gold);
+    }
+    #score-display { font-size: 22px; font-weight: 900; color: var(--fc-gold); }
+    #score-bar .spacer { flex: 1; min-width: 10px; }
+    #btn-print {
+      background: var(--fc-gold); color: var(--fc-dark);
+      border: none; border-radius: 6px; padding: 7px 16px;
+      font-size: 13px; font-weight: 700; cursor: pointer;
+    }
+
+    main { max-width: 860px; margin: 20px auto; padding: 0 12px 40px; }
+
+    .card { background: #fff; border-radius: var(--radius); box-shadow: 0 2px 8px rgba(0,0,0,.08); margin-bottom: 18px; overflow: hidden; }
+    .card-header {
+      background: var(--fc-dark); color: #fff; padding: 11px 18px;
+      font-size: 13px; font-weight: 700; letter-spacing: .4px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .card-header .icon { font-size: 15px; }
+    .cat-score {
+      margin-left: auto; font-size: 12px;
+      background: rgba(255,255,255,.15); border-radius: 12px; padding: 2px 10px;
+    }
+    .card-body { padding: 18px; }
+
+    /* Info grid */
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .info-grid label { display: block; font-size: 11px; font-weight: 700; color: #666; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .5px; }
+    .info-grid input, .info-grid select {
+      width: 100%; border: 1px solid var(--border); border-radius: 6px;
+      padding: 9px 10px; font-size: 14px; background: #fafafa;
+    }
+    .info-grid input:focus, .info-grid select:focus { outline: 2px solid var(--fc-gold); background: #fff; }
+
+    /* Table */
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .cl-table { width: 100%; border-collapse: collapse; min-width: 320px; }
+    .cl-table th {
+      font-size: 11px; text-transform: uppercase; letter-spacing: .5px;
+      color: #888; font-weight: 700; padding: 8px 10px;
+      border-bottom: 2px solid #eee; text-align: left; white-space: nowrap;
+    }
+    .cl-table td { padding: 9px 8px; border-bottom: 1px solid #f0f0f0; font-size: 14px; vertical-align: middle; }
+    .cl-table tr:last-child td { border-bottom: none; }
+    .cl-table tr:hover td { background: #fafaf5; }
+    .cl-table td:first-child { min-width: 140px; }
+
+    /* Status pills */
+    .sg { display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; }
+    .sg input[type="radio"] { display: none; }
+    .sg label {
+      cursor: pointer; border: 1.5px solid #ddd; border-radius: 20px;
+      padding: 5px 10px; font-size: 12px; font-weight: 700;
+      white-space: nowrap; user-select: none; -webkit-user-select: none;
+      touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+      transition: all .15s;
+    }
+    .sg input[value="ok"]:checked    + label { background: var(--ok);    color: #fff; border-color: var(--ok); }
+    .sg input[value="notok"]:checked + label { background: var(--notok); color: #fff; border-color: var(--notok); }
+    .sg input[value="na"]:checked    + label { background: var(--na);    color: #fff; border-color: var(--na); }
+
+    /* Obs */
+    .obs { width: 100%; border: 1px solid #e0e0e0; border-radius: 6px; padding: 6px 8px; font-size: 12px; resize: none; height: 34px; background: #fafafa; font-family: inherit; }
+    .obs:focus { outline: 2px solid var(--fc-gold); background: #fff; height: 56px; }
+
+    /* Special inputs */
+    .cad-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    .cad-row span { font-size: 11px; color: #666; }
+    .num-in { width: 60px; border: 1px solid #ddd; border-radius: 6px; padding: 5px 6px; font-size: 13px; text-align: center; }
+    .neg-in { width: 80px; border: 1px solid #ddd; border-radius: 6px; padding: 5px 6px; font-size: 13px; text-align: center; }
+
+    /* Delete btn */
+    .del-btn { background: none; border: none; cursor: pointer; color: #ccc; font-size: 16px; padding: 0 2px; }
+    .del-btn:hover { color: var(--notok); }
+
+    /* Add item */
+    .add-row td { padding: 8px 10px; }
+    .btn-add {
+      background: #fff; border: 1.5px dashed var(--fc-gold); color: var(--fc-gold);
+      border-radius: 6px; padding: 6px 14px; font-size: 13px; font-weight: 700; cursor: pointer;
+    }
+    .btn-add:hover { background: #fdf6e3; }
+
+    /* AI Grid */
+    .ai-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .ai-item { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; border: 1px solid #eee; border-radius: 8px; gap: 8px; flex-wrap: wrap; }
+    .ai-item span { font-size: 13px; font-weight: 600; }
+    .ai-tog { display: flex; gap: 6px; }
+    .ai-tog input[type="radio"] { display: none; }
+    .ai-tog label { cursor: pointer; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 20px; border: 1.5px solid #ddd; user-select: none; -webkit-user-select: none; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+    .ai-tog input[value="ok"]:checked    + label { background: var(--ok);    color: #fff; border-color: var(--ok); }
+    .ai-tog input[value="notok"]:checked + label { background: var(--notok); color: #fff; border-color: var(--notok); }
+
+    /* Relato */
+    .relato { width: 100%; min-height: 110px; border: 1px solid #ddd; border-radius: 8px; padding: 12px; font-size: 14px; resize: vertical; background: #fafafa; font-family: inherit; }
+    .relato:focus { outline: 2px solid var(--fc-gold); background: #fff; }
+
+    /* Actions */
+    .actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 4px; }
+    .btn-primary { background: var(--fc-dark); color: #fff; border: none; border-radius: 8px; padding: 12px 26px; font-size: 15px; font-weight: 700; cursor: pointer; }
+    .btn-secondary { background: #fff; color: var(--fc-dark); border: 2px solid var(--fc-dark); border-radius: 8px; padding: 12px 26px; font-size: 15px; font-weight: 700; cursor: pointer; }
+
+    /* Modal */
+    /* Inline report section (replaces fixed modal) */
+    #report-section { display: none; margin-top: 24px; background: #fff; border-radius: 12px; border: 2px solid var(--fc-gold); padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,.12); }
+    #report-section.open { display: block; }
+    #report-section h2 { font-size: 18px; margin-bottom: 14px; color: var(--fc-dark); }
+    #report-content { font-size: 13px; line-height: 1.7; white-space: pre-wrap; font-family: monospace; background: #f7f4ee; border: 1px solid #ddd; border-radius: 8px; padding: 14px; max-height: 400px; overflow-y: auto; }
+    .rcl-btn { margin-top: 0; padding: 9px 20px; background: var(--fc-dark); color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 700; }
+
+    /* Mobile */
+    @media (max-width: 600px) {
+      header h1 { font-size: 15px; }
+      .info-grid { grid-template-columns: 1fr; }
+      .ai-grid { grid-template-columns: 1fr; }
+      .actions { flex-direction: column; }
+      .btn-primary, .btn-secondary { width: 100%; text-align: center; }
+      .cl-table td:nth-child(3), .cl-table th:nth-child(3) { display: none; }
+    }
+
+    @media print {
+      header, #score-bar { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      #btn-print, .add-row, .del-btn, .actions, .rcl-btn, #email-section { display: none !important; }
+      main { margin: 0; padding: 0; max-width: 100%; }
+      .card { box-shadow: none; border: 1px solid #ddd; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo-box">FC</div>
+  <div>
+    <h1>SUPERVISÃO DE CAMPO</h1>
+    <p>First Class – Checklist de Visita</p>
+  </div>
+</header>
+
+<div id="score-bar">
+  <span>Score geral:</span>
+  <strong id="score-display">–</strong>
+  <span id="score-info" style="color:#aaa;font-size:12px;"></span>
+  <div class="spacer"></div>
+  <button id="btn-print" onclick="window.print()">🖨 Imprimir</button>
+</div>
+
+<main>
+
+  <!-- IDENTIFICAÇÃO -->
+  <div class="card">
+    <div class="card-header"><span class="icon">📋</span> Identificação da Visita</div>
+    <div class="card-body">
+      <div class="info-grid">
+        <div>
+          <label>Loja / Unidade</label>
+          <select id="loja">
+            <option value="">— Selecionar loja —</option>
+            <optgroup label="🟡 Belém / Ananindeua">
+              <option value="ANA1 – ANANINDEUA (Cód. 461)">ANA1 – ANANINDEUA (Cód. 461)</option>
+              <option value="BEL2 – BOULEVARD SHOPPING (Cód. 264)">BEL2 – BOULEVARD SHOPPING (Cód. 264)</option>
+              <option value="BEL3 – PÁTIO SHOPPING (Cód. 132)">BEL3 – PÁTIO SHOPPING (Cód. 132)</option>
+              <option value="BEL4 – PARQUE SHOPPING (Cód. 142)">BEL4 – PARQUE SHOPPING (Cód. 142)</option>
+              <option value="BEL5 – GRÃO PARÁ (Cód. 399)">BEL5 – GRÃO PARÁ (Cód. 399)</option>
+            </optgroup>
+            <optgroup label="🔵 Manaus">
+              <option value="MAN1 – AMAZONAS SHOPPING (Cód. 70)">MAN1 – AMAZONAS SHOPPING (Cód. 70)</option>
+              <option value="MAN3 – MANAUARA SHOPPING (Cód. 184)">MAN3 – MANAUARA SHOPPING (Cód. 184)</option>
+              <option value="MAN4 – PONTA NEGRA SHOPPING (Cód. 284)">MAN4 – PONTA NEGRA SHOPPING (Cód. 284)</option>
+              <option value="MAN6 – SUMAÚMA PARK SHOPPING (Cód. 595)">MAN6 – SUMAÚMA PARK SHOPPING (Cód. 595)</option>
+            </optgroup>
+          </select>
+        </div>
+        <div>
+          <label>Data da Visita</label>
+          <input id="data" type="date" />
+        </div>
+        <div>
+          <label>Supervisor(a)</label>
+          <input id="supervisor" type="text" placeholder="Nome do supervisor" />
+        </div>
+        <div>
+          <label>Responsável pela Loja</label>
+          <input id="responsavel" type="text" placeholder="Nome do gerente / líder" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VISUAL & COMUNICAÇÃO -->
+  <div class="card">
+    <div class="card-header"><span class="icon">🏷</span> Visual &amp; Comunicação <span class="cat-score" id="cs-visual">– / –</span></div>
+    <div class="card-body" style="padding:0 0 4px;">
+      <div class="table-wrap">
+      <table class="cl-table">
+        <thead><tr><th style="width:38%">Item</th><th style="width:30%">Status</th><th>Observações</th><th style="width:28px"></th></tr></thead>
+        <tbody id="tbody-visual">
+          <tr data-id="v1" data-cat="visual"><td>Placas de Preço</td><td style="text-align:center"><div class="sg"><input type="radio" name="st_v1" id="ok_v1" value="ok" onchange="score()"><label for="ok_v1">OK</label><input type="radio" name="st_v1" id="no_v1" value="notok" onchange="score()"><label for="no_v1">Não OK</label><input type="radio" name="st_v1" id="na_v1" value="na" onchange="score()"><label for="na_v1">N/A</label></div></td><td><textarea class="obs" placeholder="Observação…"></textarea></td><td><button class="del-btn" onclick="del(this)">✕</button></td></tr>
+          <tr data-id="v2" data-cat="visual"><td>Campanha Atual (banner, placas e bolas)</td><td style="text-align:center"><div class="sg"><input type="radio" name="st_v2" id="ok_v2" value="ok" onchange="score()"><label for="ok_v2">OK</label><input type="radio" name="st_v2" id="no_v2" value="notok" onchange="score()"><label for="no_v2">Não OK</label><input type="radio" name="st_v2" id="na_v2" value="na" onchange="score()"><label for="na_v2">N/A</label></div></td><td><textarea class="obs" placeholder="Observação…"></textarea></td><td><button class="del-btn" onclick="del(this)">✕</button></td></tr>
+          <tr data-id="v3" data-cat="visual"><td>Campanha Compre e Ganhe</td><td style="text-align:center"><div class="sg"><input type="radio" name="st_v3" id="ok_v3" value="ok" onchange="score()"><label for="ok_v3">OK</label><input type="radio" name="st_v3" id="no_v3" value="notok" onchange="score()"><label for="no_v3">Não OK</label><input type="radio" name="st_v3" id="na_v3" value="na" onchange="score()"><label for="na_v3">N/A</label></div></td><td><textarea class="obs" placeholder="Observação…"></textarea></td><td><button class="del-btn" onclick="del(this)">✕</button></td></tr>
+          <tr data-id="v4" data-cat="visual"><td>Material de Campanha – Frente de Loja</td><td style="text-align:center"><div class="sg"><input type="radio" name="st_v4" id="ok_v4" value="ok" onchange="score()"><label for="ok_v4">OK</label><input type="radio" name="st_v4" id="no_v4" value="notok" onchange="score()"><label for="no_v4">Não OK</label><input type="radio" name="st_v4" id="na_v4" value="na" onchange="score()"><label for="na_v4">N/A</label></div></td><td><textarea class="obs" placeholder="Observação…"></textarea></td><td><button class="del-btn" onclick="del(this)">✕</button></td></tr>
+          <tr data-id="v5" data-cat="visual"><td>Displays</td><td style="text-align:center"><div class="sg"><input type="radio" name="st_v5" id="ok_v5" value="ok" onchange="score()"><label for="ok_v5">OK</label><input type="radio" name="st_v5" id="no_v5" value="notok" onchange="score()"><label for="no_v5">Não OK</label><input type="radio" name="st_v5" id="na_v5" value="na" onchange="score()"><label for="na_v5">N/A</label></div></td><td><textarea class="obs" placeholder="Observação…"></textarea></td><td><button class="del-btn" onclick="del(this)">✕</button></td></tr>
+          <tr data-id="v6" data-cat="visual"><td>Placa "Não Trocamos Travesseiros"</td><td style="text-align:center"><div class="sg"><input type="radio" name="st_v6" id="ok_v6" value="ok" onchange="score()"><label for="ok_v6">OK</label><input type="radio" name="st_v6" id="no_v6" value="notok" onchange="score()"><label for="no_v6">Não OK</label><input type="radio" name="st_v6" id="na_v6" value="na" onchange="score()"><label for="na_v6">N/A</label></div></td><td><textarea class="obs" placeholder="Observação…"></textarea></td><td><button class="del-btn" onclick="del(this)">✕</button></td></tr>
+          <tr data-id="v7" data-cat="visual"><td>Placa Forma de Pagamento</td><td style="text-align:center"><div class="sg"><input type="radio" name="st_v7" id="ok_v7" value="ok" onchange="score()"><label for="ok_v7">OK</label><input type="radio" name="st_v7" id="no_v7" value="notok" onchange="score()"><label for="no_v7">Não OK</label><input type="radio" name="st_v7" id="na_v7" value="na" onchange="score()"><label for="na_v7">N/A</label></div></td><td><textarea class="obs" placeholder="Observação…"></textarea></td><td><button class="del-btn" onclick="del(this)">✕</button></td></tr>
+          <tr data-id="v8" data-cat="visual"><td>Letreiro</td><td style="text-align:center"><div class="sg"><input type="radio" name="st_v8" id="ok_v8" value="ok" onchange="score()"><label for="ok_v8">OK</label><input type="radio" name="st_v8" id="no_v8" value="notok" onchange="score()"><label for="no_v8">Não OK</label><input type="radio" name="st_v8" id="na_v8" value="na" onchange="score()"><label for="na_v8">N/A</label></div></td><td><textarea class="obs" placeholder="Observação…"></textarea></td><td><button class="del-btn" onclick="del(this)">✕</button></td></tr>
+          <tr data-id="v9" data-cat="visual"><td>Fundo Amarelo com Logo</td><td style="text-align:center"><div class="sg"><input type="radio" name="st_v9" id="ok_v9" value="ok" onchange="score()"><label for="ok_v9">OK</label><input type="radio" name="st_v9" id="no_v9" value="notok" onchange="score()"><label for="no_v9">Não OK</label><input type="radio" name="st_v9" id="na_v9" value="na" onchange="score()"><label for="na_v9">N/A</label></div></td><td><textarea class="obs" placeholder="Observação…"></textarea></td><td><button class="del-btn" onclick="del(this)">✕</button></td></tr>
+          <tr data-id="v10" data-cat="visual"><td>Pintura (paredes internas e externas)</td><td style="text-align:center"><div class="sg"><input type="radio" name="st_v10" id="ok_v10" value="ok" onchange="score()"><label for="ok_v10">OK</label><input type="radio" name="st_v10" id="no_v10" value="notok" onchange="score()"><label for="no_v10">Não OK</label><input type="radio" name="st_v10" id="na_v10" value="na" onchange="score()"><label for="na_v10">N/A</label></div></td><td><textarea class="obs" placeholder="Observação…"></textarea></td><td><button class="del-btn" onclick="del(this)">✕</button></td></tr>
+          <tr data-id="v11" data-cat="visual"><td>Padronização de Loja</td><td style="text-align:center"><div class="sg"><input type="radio" name="st_v11" id="ok_v11" value="ok" onchange="score()"><label for="ok_v11">OK</label><input type="radio" name="st_v11" id="no_v11" value="notok" onchange="score()"><label for="no_v11">Não OK</label><input type="radio" name="st_v11" id="na_v11" value="na" onchange="score()"><label for="na_v11">N/A</label></div></td><td><textarea class="obs" placeholder="Observação…"></textarea></td><td><button class="del-btn" onclick="del(this)">✕</button></td></tr>
+        </tbody>
+        <tfoot><tr class="add-row"><td colspan="4"><button class="btn-add" data-cat="visual">+ Adicionar item</button></td></tr></tfoot>
+      </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- OPERACIONAL -->
+  <div class="card">
+    <div class="card-header"><span class="icon">⚙️</span> Operacional &amp; Estrutura <span class="cat-score" id="cs-oper">– / –</span></div>
+    <div class="card-body" style="padding:0 0 4px;">
+      <div class="table-wrap">
+      <table class="cl-table">
+        <thead><tr><th style="width:38%">Item</th><th style="width:30%">Status</th><th>Observações</th><th style="width:28px"></th></tr></thead>
+        <tbody id="tbody-oper">
+          <tr data-id="o1" data-cat="oper"><td>Refrigeração</td><td style="text-align:center"><div class="sg"><input type="radio" name="st_o1" id="ok_o1" value="ok" onchange="score()"><label for="ok_o1">OK</label><input type="radio" name="st_o1" id="no_o1" value="notok" onchange="score()"><label for="no_o1">Não OK</label><input type="radio" name="st_o1" id="na_o1" value="na" onchange="score()"><label for="na_o1">N/A</label></div></td><td><textarea class="obs" placeholder="Observação…"></textarea></td><td><button class="del-btn" onclick="del(this)">✕</button></td></tr>
+          <tr data-id="o2" data-cat="oper"><td>Impressora</td><td style="text-align:center"><div class="sg"><input type="radio" name="st_o2" id="ok_o2" value="ok" onchange="score()"><label for="ok_o2">OK</label><input type="radio" name="st_o2" id="no_o2" value="notok" onchange="score()"><label for="no_o2">Não OK</label><input type="radio" name="st_o2" id="na_o2" value="na" onchange="score()"><label for="na_o2">N/A</label></div></td><td><textarea class="obs" placeholder="Observação…"></textarea></td><td><button class="del-btn" onclick="del(this)">✕</button></td></tr>
+          <tr data-id="o3" data-cat="oper"><td>Estoque</td><td style="text-align:center"><div class="sg"><input type="radio" name="st_o3" id="ok_o3" value="ok" onchange="score()"><label for="ok_o3">OK</label><input type="radio" name="st_o3" id="no_o3" value="notok" onchange="score()"><label for="no_o3">Não OK</label><input type="radio" name="st_o3" id="na_o3" value="na" onchange="score()"><label for="na_o3">N/A</label></div></td><td><textarea class="obs" placeholder="Observação…"></textarea></td><td><button class="del-btn" onclick="del(this)">✕</button></td></tr>
+          <tr data-id="o4" data-cat="oper"><td>Etiquetas</td><td style="text-align:center"><div class="sg"><input type="radio" name="st_o4" id="ok_o4" value="ok" onchange="score()"><label for="ok_o4">OK</label><input type="radio" name="st_o4" id="no_o4" value="notok" onchange="score()"><label for="no_o4">Não OK</label><input type="radio" name="st_o4" id="na_o4" value="na" onchange="score()"><label for="na_o4">N/A</label></div></td><td><textarea class="obs" placeholder="Observação…"></textarea></td><td><button class="del-btn" onclick="del(this)">✕</button></td></tr>
+          <tr data-id="o5" data-cat="oper"><td>Carimbo com Nome da Loja</td><td style="text-align:center"><div class="sg"><input type="radio" name="st_o5" id="ok_o5" value="ok" onchange="score()"><label for="ok_o5">OK</label><input type="radio" name="st_o5" id="no_o5" value="notok" onchange="score()"><label for="no_o5">Não OK</label><input type="radio" name="st_o5" id="na_o5" value="na" onchange="score()"><label for="na_o5">N/A</label></div></td><td><textarea class="obs" placeholder="Observação…"></textarea></td><td><button class="del-btn" onclick="del(this)">✕</button></td></tr>
+          <tr data-id="o6" data-cat="oper"><td>Iluminação / Lâmpadas</td><td style="text-align:center"><div class="sg"><input type="radio" name="st_o6" id="ok_o6" value="ok" onchange="score()"><label for="ok_o6">OK</label><input type="radio" name="st_o6" id="no_o6" value="notok" onchange="score()"><label for="no_o6">Não OK</label><input type="radio" name="st_o6" id="na_o6" value="na" onchange="score()"><label for="na_o6">N/A</label></div></td><td><textarea class="obs" placeholder="Observação…"></textarea></td><td><button class="del-btn" onclick="del(this)">✕</button></td></tr>
+          <tr data-id="o7" data-cat="oper"><td>Cheirinho da Loja</td><td style="text-align:center"><div class="sg"><input type="radio" name="st_o7" id="ok_o7" value="ok" onchange="score()"><label for="ok_o7">OK</label><input type="radio" name="st_o7" id="no_o7" value="notok" onchange="score()"><label for="no_o7">Não OK</label><input type="radio" name="st_o7" id="na_o7" value="na" onchange="score()"><label for="na_o7">N/A</label></div></td><td><textarea class="obs" placeholder="Observação…"></textarea></td><td><button class="del-btn" onclick="del(this)">✕</button></td></tr>
+          <tr data-id="o8" data-cat="oper"><td>Bloco de Troca</td><td style="text-align:center"><div class="sg"><input type="radio" name="st_o8" id="ok_o8" value="ok" onchange="score()"><label for="ok_o8">OK</label><input type="radio" name="st_o8" id="no_o8" value="notok" onchange="score()"><label for="no_o8">Não OK</label><input type="radio" name="st_o8" id="na_o8" value="na" onchange="score()"><label for="na_o8">N/A</label></div></td><td><textarea class="obs" placeholder="Observação…"></textarea></td><td><button class="del-btn" onclick="del(this)">✕</button></td></tr>
+          <tr data-id="o9" data-cat="oper"><td>Móveis (estado de conservação)</td><td style="text-align:center"><div class="sg"><input type="radio" name="st_o9" id="ok_o9" value="ok" onchange="score()"><label for="ok_o9">OK</label><input type="radio" name="st_o9" id="no_o9" value="notok" onchange="score()"><label for="no_o9">Não OK</label><input type="radio" name="st_o9" id="na_o9" value="na" onchange="score()"><label for="na_o9">N/A</label></div></td><td><textarea class="obs" placeholder="Observação…"></textarea></td><td><button class="del-btn" onclick="del(this)">✕</button></td></tr>
+          <tr data-id="o10" data-cat="oper"><td>Recolher os Caixas (conferência física)</td><td style="text-align:center"><div class="sg"><input type="radio" name="st_o10" id="ok_o10" value="ok" onchange="score()"><label for="ok_o10">OK</label><input type="radio" name="st_o10" id="no_o10" value="notok" onchange="score()"><label for="no_o10">Não OK</label><input type="radio" name="st_o10" id="na_o10" value="na" onchange="score()"><label for="na_o10">N/A</label></div></td><td><textarea class="obs" placeholder="Observação…"></textarea></td><td><button class="del-btn" onclick="del(this)">✕</button></td></tr>
+          <tr data-id="o11" data-cat="oper"><td>Bater Fundo de Caixa</td><td style="text-align:center"><div class="sg"><input type="radio" name="st_o11" id="ok_o11" value="ok" onchange="score()"><label for="ok_o11">OK</label><input type="radio" name="st_o11" id="no_o11" value="notok" onchange="score()"><label for="no_o11">Não OK</label><input type="radio" name="st_o11" id="na_o11" value="na" onchange="score()"><label for="na_o11">N/A</label></div></td><td><textarea class="obs" placeholder="Observação…"></textarea></td><td><button class="del-btn" onclick="del(this)">✕</button></td></tr>
+          <tr data-id="o12" data-cat="oper"><td>Equipamentos (funcionamento e conservação)</td><td style="text-align:center"><div class="sg"><input type="radio" name="st_o12" id="ok_o12" value="ok" onchange="score()"><label for="ok_o12">OK</label><input type="radio" name="st_o12" id="no_o12" value="notok" onchange="score()"><label for="no_o12">Não OK</label><input type="radio" name="st_o12" id="na_o12" value="na" onchange="score()"><label for="na_o12">N/A</label></div></td><td><textarea class="obs" placeholder="Observação…"></textarea></td><td><button class="del-btn" onclick="del(this)">✕</button></td></tr>
+          <tr data-id="o13" data-cat="oper"><td>Alvarás (em dia e afixados)</td><td style="text-align:center"><div class="sg"><input type="radio" name="st_o13" id="ok_o13" value="ok" onchange="score()"><label for="ok_o13">OK</label><input type="radio" name="st_o13" id="no_o13" value="notok" onchange="score()"><label for="no_o13">Não OK</label><input type="radio" name="st_o13" id="na_o13" value="na" onchange="score()"><label for="na_o13">N/A</label></div></td><td><textarea class="obs" placeholder="Observação…"></textarea></td><td><button class="del-btn" onclick="del(this)">✕</button></td></tr>
+        </tbody>
+        <tfoot><tr class="add-row"><td colspan="4"><button class="btn-add" data-cat="oper">+ Adicionar item</button></td></tr></tfoot>
+      </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- EQUIPE -->
+  <div class="card">
+    <div class="card-header"><span class="icon">👥</span> Equipe &amp; Padrão <span class="cat-score" id="cs-equipe">– / –</span></div>
+    <div class="card-body" style="padding:0 0 4px;">
+      <div class="table-wrap">
+      <table class="cl-table">
+        <thead><tr><th style="width:38%">Item</th><th style="width:30%">Status</th><th>Observações</th><th style="width:28px"></th></tr></thead>
+        <tbody id="tbody-equipe">
+          <tr data-id="e1" data-cat="equipe"><td>Uniforme</td><td style="text-align:center"><div class="sg"><input type="radio" name="st_e1" id="ok_e1" value="ok" onchange="score()"><label for="ok_e1">OK</label><input type="radio" name="st_e1" id="no_e1" value="notok" onchange="score()"><label for="no_e1">Não OK</label><input type="radio" name="st_e1" id="na_e1" value="na" onchange="score()"><label for="na_e1">N/A</label></div></td><td><textarea class="obs" placeholder="Observação…"></textarea></td><td><button class="del-btn" onclick="del(this)">✕</button></td></tr>
+          <tr data-id="e2" data-cat="equipe"><td>Fardamento das Vendedoras – Dentro do Padrão</td><td style="text-align:center"><div class="sg"><input type="radio" name="st_e2" id="ok_e2" value="ok" onchange="score()"><label for="ok_e2">OK</label><input type="radio" name="st_e2" id="no_e2" value="notok" onchange="score()"><label for="no_e2">Não OK</label><input type="radio" name="st_e2" id="na_e2" value="na" onchange="score()"><label for="na_e2">N/A</label></div></td><td><textarea class="obs" placeholder="Observação…"></textarea></td><td><button class="del-btn" onclick="del(this)">✕</button></td></tr>
+          <tr data-id="e3" data-cat="equipe"><td>Treinamento Plataforma SOU FC</td><td style="text-align:center"><div class="sg"><input type="radio" name="st_e3" id="ok_e3" value="ok" onchange="score()"><label for="ok_e3">OK</label><input type="radio" name="st_e3" id="no_e3" value="notok" onchange="score()"><label for="no_e3">Não OK</label><input type="radio" name="st_e3" id="na_e3" value="na" onchange="score()"><label for="na_e3">N/A</label></div></td><td><textarea class="obs" placeholder="Observação…"></textarea></td><td><button class="del-btn" onclick="del(this)">✕</button></td></tr>
+        </tbody>
+        <tfoot><tr class="add-row"><td colspan="4"><button class="btn-add" data-cat="equipe">+ Adicionar item</button></td></tr></tfoot>
+      </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- DADOS & CRM -->
+  <div class="card">
+    <div class="card-header"><span class="icon">📊</span> Dados &amp; CRM <span class="cat-score" id="cs-dados">– / –</span></div>
+    <div class="card-body" style="padding:0 0 4px;">
+      <div class="table-wrap">
+      <table class="cl-table">
+        <thead><tr><th style="width:38%">Item</th><th style="width:30%">Status / Valor</th><th>Observações</th><th style="width:28px"></th></tr></thead>
+        <tbody id="tbody-dados">
+          <tr data-id="d1" data-cat="dados" data-sp="negativos"><td>Negativos (qtd.)</td><td style="text-align:center"><input class="neg-in" type="number" placeholder="0" id="neg-val" oninput="score()"></td><td><textarea class="obs" placeholder="Observação…"></textarea></td><td><button class="del-btn" onclick="del(this)">✕</button></td></tr>
+          <tr data-id="d2" data-cat="dados" data-sp="cadastro"><td>Cadastro – Associação / E-mail / Celular</td><td style="text-align:center"><div class="cad-row"><span>Assoc.:</span><input class="num-in" type="number" min="0" max="100" placeholder="%" id="cad-a" oninput="score()"><span>Email:</span><input class="num-in" type="number" min="0" max="100" placeholder="%" id="cad-e" oninput="score()"><span>Cel.:</span><input class="num-in" type="number" min="0" max="100" placeholder="%" id="cad-c" oninput="score()"></div></td><td><textarea class="obs" placeholder="Observação…"></textarea></td><td><button class="del-btn" onclick="del(this)">✕</button></td></tr>
+          <tr data-id="d3" data-cat="dados" data-sp="metas"><td>Metas da Dezena</td><td style="text-align:center"><span style="font-size:11px;color:#888;font-style:italic">Ver obs. →</span></td><td><textarea class="obs" placeholder="Quem bateu / quem está próximo / quem não bateu" style="height:48px"></textarea></td><td><button class="del-btn" onclick="del(this)">✕</button></td></tr>
+        </tbody>
+        <tfoot><tr class="add-row"><td colspan="4"><button class="btn-add" data-cat="dados">+ Adicionar item</button></td></tr></tfoot>
+      </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ANÁLISE INTERNA -->
+  <div class="card">
+    <div class="card-header"><span class="icon">🔍</span> Análise Interna</div>
+    <div class="card-body">
+      <div class="ai-grid">
+        <div class="ai-item"><span>Uniforme Padrão</span><div class="ai-tog"><input type="radio" name="ai0" id="ai0ok" value="ok"><label for="ai0ok">√</label><input type="radio" name="ai0" id="ai0no" value="notok"><label for="ai0no">✗</label></div></div>
+        <div class="ai-item"><span>Material da Campanha</span><div class="ai-tog"><input type="radio" name="ai1" id="ai1ok" value="ok"><label for="ai1ok">√</label><input type="radio" name="ai1" id="ai1no" value="notok"><label for="ai1no">✗</label></div></div>
+        <div class="ai-item"><span>Estoque</span><div class="ai-tog"><input type="radio" name="ai2" id="ai2ok" value="ok"><label for="ai2ok">√</label><input type="radio" name="ai2" id="ai2no" value="notok"><label for="ai2no">✗</label></div></div>
+        <div class="ai-item"><span>Negativo</span><div class="ai-tog"><input type="radio" name="ai3" id="ai3ok" value="ok"><label for="ai3ok">√</label><input type="radio" name="ai3" id="ai3no" value="notok"><label for="ai3no">✗</label></div></div>
+        <div class="ai-item"><span>Loja</span><div class="ai-tog"><input type="radio" name="ai4" id="ai4ok" value="ok"><label for="ai4ok">√</label><input type="radio" name="ai4" id="ai4no" value="notok"><label for="ai4no">✗</label></div></div>
+        <div class="ai-item"><span>Carimbo de Troca</span><div class="ai-tog"><input type="radio" name="ai5" id="ai5ok" value="ok"><label for="ai5ok">√</label><input type="radio" name="ai5" id="ai5no" value="notok"><label for="ai5no">✗</label></div></div>
+        <div class="ai-item"><span>Material de Insumo</span><div class="ai-tog"><input type="radio" name="ai6" id="ai6ok" value="ok"><label for="ai6ok">√</label><input type="radio" name="ai6" id="ai6no" value="notok"><label for="ai6no">✗</label></div></div>
+        <div class="ai-item"><span>Material de Estudo</span><div class="ai-tog"><input type="radio" name="ai7" id="ai7ok" value="ok"><label for="ai7ok">√</label><input type="radio" name="ai7" id="ai7no" value="notok"><label for="ai7no">✗</label></div></div>
+        <div class="ai-item"><span>Iluminação</span><div class="ai-tog"><input type="radio" name="ai8" id="ai8ok" value="ok"><label for="ai8ok">√</label><input type="radio" name="ai8" id="ai8no" value="notok"><label for="ai8no">✗</label></div></div>
+        <div class="ai-item"><span>CRM</span><div class="ai-tog"><input type="radio" name="ai9" id="ai9ok" value="ok"><label for="ai9ok">√</label><input type="radio" name="ai9" id="ai9no" value="notok"><label for="ai9no">✗</label></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RELATO FINAL -->
+  <div class="card">
+    <div class="card-header"><span class="icon">📝</span> Relato Final</div>
+    <div class="card-body">
+      <textarea id="relato" class="relato" placeholder="Descreva os pontos observados, positivos, a melhorar e recomendações…"></textarea>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn-secondary" onclick="if(confirm('Limpar formulário?'))location.reload()">↺ Limpar</button>
+    <button class="btn-primary" onclick="gerarRelatorio()">📄 Gerar Relatório</button>
+  </div>
+
+
+<!-- RELATÓRIO INLINE -->
+<div id="report-section">
+  <h2>📄 Relatório de Supervisão – First Class</h2>
+  <pre id="report-content"></pre>
+  <div id="email-section" style="margin-top:16px;padding:14px;background:#f7f4ee;border-radius:8px;border:1px solid #ddd;">
+    <p style="font-size:12px;font-weight:700;color:#666;text-transform:uppercase;margin-bottom:10px;">📧 Enviar por Email</p>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><label style="font-size:12px;color:#555;min-width:55px;">Para:</label><input id="email-to" type="email" placeholder="destinatario@email.com" style="flex:1;min-width:180px;border:1px solid #ddd;border-radius:6px;padding:7px 10px;font-size:13px;"></div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><label style="font-size:12px;color:#555;min-width:55px;">CC:</label><input id="email-cc" type="email" placeholder="copia@email.com (opcional)" style="flex:1;min-width:180px;border:1px solid #ddd;border-radius:6px;padding:7px 10px;font-size:13px;"></div>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
+    <button class="rcl-btn" onclick="fecharRelatorio()">✕ Fechar</button>
+    <button class="rcl-btn" style="background:#c9a84c;color:#1a1a2e" onclick="copiarRelatorio(this)">📋 Copiar</button>
+    <button class="rcl-btn" style="background:#1565c0" onclick="enviarEmail()">✉️ Enviar Email</button>
+    <button class="rcl-btn" style="background:#2e7d32" onclick="window.print()">🖨 Imprimir</button>
+  </div>
+</div>
+</main>
+
+<script>
+// ── SCORE ─────────────────────────────────────────────
+var catMap = { visual:'cs-visual', oper:'cs-oper', equipe:'cs-equipe', dados:'cs-dados' };
+
+function score() {
+  var totalOk = 0, totalEval = 0;
+  var cats = Object.keys(catMap);
+  for (var c = 0; c < cats.length; c++) {
+    var cat = cats[c];
+    var rows = document.querySelectorAll('#tbody-' + cat + ' tr');
+    var catOk = 0, catEval = 0;
+    for (var r = 0; r < rows.length; r++) {
+      var tr = rows[r];
+      if (tr.dataset.sp) continue;
+      var id = tr.dataset.id;
+      var checked = document.querySelector('input[name="st_' + id + '"]:checked');
+      if (!checked || checked.value === 'na') continue;
+      catEval++; totalEval++;
+      if (checked.value === 'ok') { catOk++; totalOk++; }
+    }
+    var el = document.getElementById(catMap[cat]);
+    if (catEval > 0) {
+      var pct = Math.round(catOk / catEval * 100);
+      el.textContent = catOk + '/' + catEval + ' · ' + pct + '%';
+      el.style.background = pct >= 80 ? 'rgba(46,125,50,.6)' : pct >= 60 ? 'rgba(201,168,76,.7)' : 'rgba(198,40,40,.6)';
+    } else {
+      el.textContent = '– / –';
+      el.style.background = 'rgba(255,255,255,.15)';
+    }
+  }
+  var disp = document.getElementById('score-display');
+  var info = document.getElementById('score-info');
+  if (totalEval > 0) {
+    var gp = Math.round(totalOk / totalEval * 100);
+    disp.textContent = gp + '%';
+    disp.style.color = gp >= 80 ? '#4caf50' : gp >= 60 ? '#ffb300' : '#ef5350';
+    info.textContent = '(' + totalOk + ' OK · ' + (totalEval - totalOk) + ' Não OK)';
+  } else {
+    disp.textContent = '–';
+    info.textContent = '';
+  }
+}
+
+// ── DELETE ROW ────────────────────────────────────────
+function del(btn) { btn.closest('tr').remove(); score(); }
+
+// ── ADD ROW ───────────────────────────────────────────
+var counters = { visual: 100, oper: 200, equipe: 300, dados: 400 };
+var addBtns = document.querySelectorAll('.btn-add');
+for (var bi = 0; bi < addBtns.length; bi++) {
+  (function(btn) {
+  btn.addEventListener('click', function() {
+    var cat = btn.dataset.cat;
+    var label = prompt('Nome do novo item:');
+    if (!label || !label.trim()) return;
+    counters[cat]++;
+    var newId = cat[0] + counters[cat];
+    var tbody = document.getElementById('tbody-' + cat);
+    var tr = document.createElement('tr');
+    tr.dataset.id = newId; tr.dataset.cat = cat;
+    tr.innerHTML = '<td>' + label.trim() + '</td>'
+      + '<td style="text-align:center"><div class="sg">'
+      + '<input type="radio" name="st_' + newId + '" id="ok_' + newId + '" value="ok" onchange="score()"><label for="ok_' + newId + '">OK</label>'
+      + '<input type="radio" name="st_' + newId + '" id="no_' + newId + '" value="notok" onchange="score()"><label for="no_' + newId + '">Não OK</label>'
+      + '<input type="radio" name="st_' + newId + '" id="na_' + newId + '" value="na" onchange="score()"><label for="na_' + newId + '">N/A</label>'
+      + '</div></td>'
+      + '<td><textarea class="obs" placeholder="Observação…"></textarea></td>'
+      + '<td><button class="del-btn" onclick="del(this)">✕</button></td>';
+    tbody.appendChild(tr);
+    score();
+  });
+  })(addBtns[bi]);
+}
+
+// ── REPORT ────────────────────────────────────────────
+var AI_LABELS = ['Uniforme Padrão','Material da Campanha','Estoque','Negativo','Loja','Carimbo de Troca','Material de Insumo','Material de Estudo','Iluminação','CRM'];
+
+function gerarRelatorio() {
+  var loja = document.getElementById('loja').value || '(não informado)';
+  var dataVal = document.getElementById('data').value;
+  var data = dataVal ? new Date(dataVal + 'T12:00:00').toLocaleDateString('pt-BR') : '(não informado)';
+  var sup = document.getElementById('supervisor').value || '(não informado)';
+  var resp = document.getElementById('responsavel').value || '(não informado)';
+
+  var lines = [];
+  lines.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  lines.push('     SUPERVISÃO DE CAMPO – FIRST CLASS');
+  lines.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  lines.push('Loja        : ' + loja);
+  lines.push('Data        : ' + data);
+  lines.push('Supervisor  : ' + sup);
+  lines.push('Responsável : ' + resp);
+  lines.push('');
+
+  var notOk = [];
+  var catNames = { visual:'VISUAL & COMUNICAÇÃO', oper:'OPERACIONAL & ESTRUTURA', equipe:'EQUIPE & PADRÃO', dados:'DADOS & CRM' };
+  var cats = Object.keys(catNames);
+
+  for (var c = 0; c < cats.length; c++) {
+    var cat = cats[c];
+    var rows = document.querySelectorAll('#tbody-' + cat + ' tr');
+    var catLines = [];
+    for (var r = 0; r < rows.length; r++) {
+      var tr = rows[r];
+      var label = tr.cells[0].textContent.trim();
+      var obs = tr.cells[2] ? (tr.cells[2].querySelector('textarea') || {}).value || '' : '';
+      obs = obs.trim();
+      var sp = tr.dataset.sp;
+      if (sp === 'cadastro') {
+        var a = (document.getElementById('cad-a') || {}).value || '–';
+        var e = (document.getElementById('cad-e') || {}).value || '–';
+        var cc = (document.getElementById('cad-c') || {}).value || '–';
+        catLines.push('  ' + label + ': Assoc. ' + a + '% | Email ' + e + '% | Cel. ' + cc + '%');
+        continue;
+      }
+      if (sp === 'negativos') {
+        var n = (document.getElementById('neg-val') || {}).value || '–';
+        catLines.push('  ' + label + ': ' + n);
+        continue;
+      }
+      if (sp === 'metas') {
+        catLines.push('  ' + label + ':\n    ' + (obs || '(não preenchido)'));
+        continue;
+      }
+      var id = tr.dataset.id;
+      var checked = document.querySelector('input[name="st_' + id + '"]:checked');
+      var st = checked ? (checked.value === 'ok' ? '✔ OK' : checked.value === 'na' ? '○ N/A' : '✘ Não OK') : '— (não avaliado)';
+      catLines.push('  ' + label + ': ' + st + (obs ? ' – ' + obs : ''));
+      if (checked && checked.value === 'notok') notOk.push('• ' + label + (obs ? ': ' + obs : ''));
+    }
+    if (catLines.length) {
+      lines.push('┌─ ' + catNames[cat]);
+      for (var i = 0; i < catLines.length; i++) lines.push(catLines[i]);
+      lines.push('');
+    }
+  }
+
+  lines.push('┌─ ANÁLISE INTERNA');
+  for (var ai = 0; ai < AI_LABELS.length; ai++) {
+    var aiChecked = document.querySelector('input[name="ai' + ai + '"]:checked');
+    lines.push('  ' + AI_LABELS[ai] + ': ' + (aiChecked ? (aiChecked.value === 'ok' ? '√' : '✗') : '—'));
+  }
+  lines.push('');
+
+  if (notOk.length) {
+    lines.push('┌─ ITENS COM PENDÊNCIA');
+    for (var p = 0; p < notOk.length; p++) lines.push(notOk[p]);
+    lines.push('');
+  }
+
+  var relato = document.getElementById('relato').value;
+  if (relato) {
+    lines.push('┌─ RELATO FINAL');
+    lines.push(relato);
+    lines.push('');
+  }
+  lines.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+  document.getElementById('report-content').textContent = lines.join('\n');
+  var sec = document.getElementById('report-section');
+  sec.classList.add('open');
+  setTimeout(function(){ sec.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
+}
+
+function fecharRelatorio() {
+  document.getElementById('report-section').classList.remove('open');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function copiarRelatorio(btn) {
+  var text = document.getElementById('report-content').textContent;
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function() {
+        btn.textContent = '✔ Copiado!';
+        setTimeout(function() { btn.textContent = '📋 Copiar'; }, 2000);
+      }).catch(function() { fallbackCopySup(text, btn); });
+    } else { fallbackCopySup(text, btn); }
+  } catch(e) { fallbackCopySup(text, btn); }
+}
+function fallbackCopySup(text, btn) {
+  var ta = document.createElement('textarea');
+  ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.focus(); ta.select();
+  try { document.execCommand('copy'); btn.textContent = '✔ Copiado!'; }
+  catch(e) { btn.textContent = 'Erro'; }
+  document.body.removeChild(ta);
+  setTimeout(function() { btn.textContent = '📋 Copiar'; }, 2000);
+}
+function enviarEmail() {
+  var to = document.getElementById('email-to').value.trim();
+  if (!to) { document.getElementById('email-to').focus(); return; }
+  var cc = document.getElementById('email-cc').value.trim();
+  var text = document.getElementById('report-content').textContent;
+  var loja = document.getElementById('loja').value || 'Visita';
+  var dataVal = document.getElementById('data').value;
+  var data = dataVal ? new Date(dataVal + 'T12:00:00').toLocaleDateString('pt-BR') : '';
+  var subject = encodeURIComponent('Supervisão First Class – ' + loja + (data ? ' – ' + data : ''));
+  var body = encodeURIComponent(text);
+  var ccPart = cc ? '&cc=' + encodeURIComponent(cc) : '';
+  window.location.href = 'mailto:' + encodeURIComponent(to) + '?subject=' + subject + ccPart + '&body=' + body;
+}
+
+// ── INIT ─────────────────────────────────────────────
+document.getElementById('data').value = new Date().toISOString().split('T')[0];
+</script>
+</body>
+</html>
