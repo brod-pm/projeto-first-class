@@ -1027,7 +1027,7 @@ function abrirEmailVazio() {
   var loja = document.getElementById('loja').value || 'Visita';
   var dataVal = document.getElementById('data').value;
   var data = dataVal ? new Date(dataVal + 'T12:00:00').toLocaleDateString('pt-BR') : '';
-  var subject = encodeURIComponent('Supervisão First Class – ' + loja + (data ? ' – ' + data : ''));
+  var subject = encodeURIComponent(('SUPERVISÃO FIRST CLASS – ' + loja + (data ? ' – ' + data : '')).toUpperCase());
   var hint = encodeURIComponent('(Cole aqui o relatório copiado — use o botão "Copiar p/ Email" antes)');
   var ccPart = cc ? '&cc=' + encodeURIComponent(cc) : '';
   var dest = to ? encodeURIComponent(to) : '';
