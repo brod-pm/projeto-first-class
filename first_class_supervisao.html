@@ -308,7 +308,35 @@
       main { margin: 0; padding: 0; max-width: 100%; }
       .card { box-shadow: none; border: 1px solid #ddd; }
     }
-  </style>
+  
+  /* ── ANÁLISE INTERNA AUTO ─────────────────── */
+  .ai-info-box {
+    background: linear-gradient(135deg, rgba(201,168,76,.15), rgba(201,168,76,.05));
+    border: 1px solid rgba(201,168,76,.4);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: #555;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    line-height: 1.4;
+  }
+  .ai-info-box .ai-info-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .ai-auto-badge {
+    font-size: 9px;
+    background: #c9a84c;
+    color: #1a1a2e;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-weight: 700;
+    margin-left: 5px;
+    vertical-align: middle;
+    display: none;
+    letter-spacing: 0.3px;
+  }
+</style>
 </head>
 <body>
 
@@ -531,17 +559,21 @@
   <div class="card">
     <div class="card-header"><span class="icon">🔍</span> Análise Interna</div>
     <div class="card-body">
+      <div class="ai-info-box">
+        <span class="ai-info-icon">🔄</span>
+        <span>Preenchida <strong>automaticamente</strong> com base nos checklists acima. Você pode ajustar manualmente qualquer item se necessário.</span>
+      </div>
       <div class="ai-grid">
-        <div class="ai-item"><span>Uniforme Padrão</span><div class="ai-tog"><input type="radio" name="ai0" id="ai0ok" value="ok"><label for="ai0ok">√</label><input type="radio" name="ai0" id="ai0no" value="notok"><label for="ai0no">✗</label></div></div>
-        <div class="ai-item"><span>Material da Campanha</span><div class="ai-tog"><input type="radio" name="ai1" id="ai1ok" value="ok"><label for="ai1ok">√</label><input type="radio" name="ai1" id="ai1no" value="notok"><label for="ai1no">✗</label></div></div>
-        <div class="ai-item"><span>Estoque</span><div class="ai-tog"><input type="radio" name="ai2" id="ai2ok" value="ok"><label for="ai2ok">√</label><input type="radio" name="ai2" id="ai2no" value="notok"><label for="ai2no">✗</label></div></div>
-        <div class="ai-item"><span>Negativo</span><div class="ai-tog"><input type="radio" name="ai3" id="ai3ok" value="ok"><label for="ai3ok">√</label><input type="radio" name="ai3" id="ai3no" value="notok"><label for="ai3no">✗</label></div></div>
-        <div class="ai-item"><span>Loja</span><div class="ai-tog"><input type="radio" name="ai4" id="ai4ok" value="ok"><label for="ai4ok">√</label><input type="radio" name="ai4" id="ai4no" value="notok"><label for="ai4no">✗</label></div></div>
-        <div class="ai-item"><span>Carimbo de Troca</span><div class="ai-tog"><input type="radio" name="ai5" id="ai5ok" value="ok"><label for="ai5ok">√</label><input type="radio" name="ai5" id="ai5no" value="notok"><label for="ai5no">✗</label></div></div>
-        <div class="ai-item"><span>Material de Insumo</span><div class="ai-tog"><input type="radio" name="ai6" id="ai6ok" value="ok"><label for="ai6ok">√</label><input type="radio" name="ai6" id="ai6no" value="notok"><label for="ai6no">✗</label></div></div>
-        <div class="ai-item"><span>Material de Estudo</span><div class="ai-tog"><input type="radio" name="ai7" id="ai7ok" value="ok"><label for="ai7ok">√</label><input type="radio" name="ai7" id="ai7no" value="notok"><label for="ai7no">✗</label></div></div>
-        <div class="ai-item"><span>Iluminação</span><div class="ai-tog"><input type="radio" name="ai8" id="ai8ok" value="ok"><label for="ai8ok">√</label><input type="radio" name="ai8" id="ai8no" value="notok"><label for="ai8no">✗</label></div></div>
-        <div class="ai-item"><span>CRM</span><div class="ai-tog"><input type="radio" name="ai9" id="ai9ok" value="ok"><label for="ai9ok">√</label><input type="radio" name="ai9" id="ai9no" value="notok"><label for="ai9no">✗</label></div></div>
+        <div class="ai-item" data-ai="0"><span>Uniforme Padrão<span class="ai-auto-badge">AUTO</span></span><div class="ai-tog"><input type="radio" name="ai0" id="ai0ok" value="ok"><label for="ai0ok">√</label><input type="radio" name="ai0" id="ai0no" value="notok"><label for="ai0no">✗</label></div></div>
+        <div class="ai-item" data-ai="1"><span>Material da Campanha<span class="ai-auto-badge">AUTO</span></span><div class="ai-tog"><input type="radio" name="ai1" id="ai1ok" value="ok"><label for="ai1ok">√</label><input type="radio" name="ai1" id="ai1no" value="notok"><label for="ai1no">✗</label></div></div>
+        <div class="ai-item" data-ai="2"><span>Estoque<span class="ai-auto-badge">AUTO</span></span><div class="ai-tog"><input type="radio" name="ai2" id="ai2ok" value="ok"><label for="ai2ok">√</label><input type="radio" name="ai2" id="ai2no" value="notok"><label for="ai2no">✗</label></div></div>
+        <div class="ai-item" data-ai="3"><span>Negativo<span class="ai-auto-badge">AUTO</span></span><div class="ai-tog"><input type="radio" name="ai3" id="ai3ok" value="ok"><label for="ai3ok">√</label><input type="radio" name="ai3" id="ai3no" value="notok"><label for="ai3no">✗</label></div></div>
+        <div class="ai-item" data-ai="4"><span>Loja<span class="ai-auto-badge">AUTO</span></span><div class="ai-tog"><input type="radio" name="ai4" id="ai4ok" value="ok"><label for="ai4ok">√</label><input type="radio" name="ai4" id="ai4no" value="notok"><label for="ai4no">✗</label></div></div>
+        <div class="ai-item" data-ai="5"><span>Carimbo de Troca<span class="ai-auto-badge">AUTO</span></span><div class="ai-tog"><input type="radio" name="ai5" id="ai5ok" value="ok"><label for="ai5ok">√</label><input type="radio" name="ai5" id="ai5no" value="notok"><label for="ai5no">✗</label></div></div>
+        <div class="ai-item" data-ai="6"><span>Material de Insumo<span class="ai-auto-badge">AUTO</span></span><div class="ai-tog"><input type="radio" name="ai6" id="ai6ok" value="ok"><label for="ai6ok">√</label><input type="radio" name="ai6" id="ai6no" value="notok"><label for="ai6no">✗</label></div></div>
+        <div class="ai-item" data-ai="7"><span>Material de Estudo<span class="ai-auto-badge">AUTO</span></span><div class="ai-tog"><input type="radio" name="ai7" id="ai7ok" value="ok"><label for="ai7ok">√</label><input type="radio" name="ai7" id="ai7no" value="notok"><label for="ai7no">✗</label></div></div>
+        <div class="ai-item" data-ai="8"><span>Iluminação<span class="ai-auto-badge">AUTO</span></span><div class="ai-tog"><input type="radio" name="ai8" id="ai8ok" value="ok"><label for="ai8ok">√</label><input type="radio" name="ai8" id="ai8no" value="notok"><label for="ai8no">✗</label></div></div>
+        <div class="ai-item" data-ai="9"><span>CRM<span class="ai-auto-badge">AUTO</span></span><div class="ai-tog"><input type="radio" name="ai9" id="ai9ok" value="ok"><label for="ai9ok">√</label><input type="radio" name="ai9" id="ai9no" value="notok"><label for="ai9no">✗</label></div></div>
       </div>
     </div>
   </div>
@@ -647,6 +679,7 @@ function score() {
     disp.textContent = '–';
     info.textContent = '';
   }
+  calcAnaliseInterna();
 }
 
 // ── DELETE ROW ────────────────────────────────────────
@@ -1056,6 +1089,65 @@ function fmtBRL(v) {
   return v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+
+// ── ANÁLISE INTERNA AUTO ──────────────────────────────
+function getChkStatus(id) {
+  var c = document.querySelector('input[name="st_' + id + '"]:checked');
+  return c ? c.value : null;
+}
+
+function worstOf(ids) {
+  var hasNotOk = false, hasOk = false;
+  for (var i = 0; i < ids.length; i++) {
+    var v = getChkStatus(ids[i]);
+    if (v === 'notok') { hasNotOk = true; break; }
+    else if (v === 'ok') hasOk = true;
+  }
+  if (hasNotOk) return 'notok';
+  if (hasOk) return 'ok';
+  return null;
+}
+
+function setAI(n, val) {
+  if (val === null) return;
+  var radio = document.querySelector('input[name="ai' + n + '"][value="' + val + '"]');
+  if (radio) {
+    radio.checked = true;
+    var item = document.querySelector('.ai-item[data-ai="' + n + '"]');
+    if (item) {
+      var badge = item.querySelector('.ai-auto-badge');
+      if (badge) badge.style.display = 'inline-block';
+    }
+  }
+}
+
+function calcAnaliseInterna() {
+  // ai0: Uniforme Padrão ← e1 (Uniforme) + e2 (Fardamento)
+  setAI(0, worstOf(['e1', 'e2']));
+  // ai1: Material da Campanha ← v2 (Campanha banner/placas) + v3 (Compre e Ganhe) + v4 (Material Frente)
+  setAI(1, worstOf(['v2', 'v3', 'v4']));
+  // ai2: Estoque ← o3 (Estoque)
+  setAI(2, getChkStatus('o3'));
+  // ai3: Negativo ← d1 (0 negativos = OK, >0 = Não OK)
+  var negEl = document.getElementById('neg-val');
+  if (negEl && negEl.value !== '') {
+    var nv = parseInt(negEl.value) || 0;
+    setAI(3, nv === 0 ? 'ok' : 'notok');
+  }
+  // ai4: Loja ← v10 (Pintura) + v11 (Padronização) + o9 (Móveis)
+  setAI(4, worstOf(['v10', 'v11', 'o9']));
+  // ai5: Carimbo de Troca ← o5 (Carimbo com Nome) + o8 (Bloco de Troca)
+  setAI(5, worstOf(['o5', 'o8']));
+  // ai6: Material de Insumo ← o7 (Cheirinho da Loja)
+  setAI(6, getChkStatus('o7'));
+  // ai7: Material de Estudo ← e3 (Treinamento Plataforma SOU FC)
+  setAI(7, getChkStatus('e3'));
+  // ai8: Iluminação ← o6 (Iluminação / Lâmpadas)
+  setAI(8, getChkStatus('o6'));
+  // ai9: CRM ← d4 (CRM atualizado) + d5 (Régua de relacionamento)
+  setAI(9, worstOf(['d4', 'd5']));
+}
+
 function calcMetas() {
   var total = parseFloat(document.getElementById('meta-total').value) || 0;
   var dezenas = ['d1','d2','d3'];
@@ -1169,7 +1261,7 @@ function limparFotos() {
 // ── PWA – Service Worker ──────────────────────────────
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
-    navigator.serviceWorker.register('service-worker.js?v=4');
+    navigator.serviceWorker.register('service-worker.js?v=6');
   });
 }
 
