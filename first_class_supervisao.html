@@ -4,6 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Supervisão de Campo – First Class</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#1a1a2e" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="FC Supervisão" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
   <style>
     :root {
       --fc-gold: #c9a84c;
@@ -794,6 +803,13 @@ function copiarAIRelatorio(btn) {
     try { document.execCommand('copy'); btn.textContent='✔ Copiado!'; } catch(e){ btn.textContent='Erro'; }
     document.body.removeChild(ta); setTimeout(function(){ btn.textContent='📋 Copiar'; },2000);
   }
+}
+
+// ── PWA – Service Worker ──────────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('service-worker.js');
+  });
 }
 
 // ── INIT ─────────────────────────────────────────────
