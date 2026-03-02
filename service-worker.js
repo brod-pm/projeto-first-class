@@ -1,4 +1,4 @@
-var CACHE = 'fc-supervisao-v5';
+var CACHE = 'fc-supervisao-v6';
 var ARQUIVOS = [
   '/first-class-forms/first_class_supervisao.html',
   '/first-class-forms/manifest.json',
