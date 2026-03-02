@@ -675,7 +675,10 @@
   <h2>📄 Relatório de Supervisão – First Class</h2>
   <div id="report-content"></div>
   <div id="email-section" style="margin-top:16px;padding:14px;background:#f7f4ee;border-radius:8px;border:1px solid #ddd;">
-    <p style="font-size:12px;font-weight:700;color:#666;text-transform:uppercase;margin-bottom:10px;">📧 Enviar por Email</p>
+    <p style="font-size:12px;font-weight:700;color:#666;text-transform:uppercase;margin-bottom:6px;">📧 Enviar por Email</p>
+    <p style="font-size:12px;color:#888;margin-bottom:10px;line-height:1.5;">
+      Copie o relatório formatado e cole diretamente no <strong>Gmail</strong> ou <strong>Outlook</strong> para manter o visual completo (cores, tabelas, logo).
+    </p>
     <div style="display:flex;flex-direction:column;gap:8px;">
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><label style="font-size:12px;color:#555;min-width:55px;">Para:</label><input id="email-to" type="email" placeholder="destinatario@email.com" style="flex:1;min-width:180px;border:1px solid #ddd;border-radius:6px;padding:7px 10px;font-size:13px;"></div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><label style="font-size:12px;color:#555;min-width:55px;">CC:</label><input id="email-cc" type="email" placeholder="copia@email.com (opcional)" style="flex:1;min-width:180px;border:1px solid #ddd;border-radius:6px;padding:7px 10px;font-size:13px;"></div>
@@ -683,8 +686,8 @@
   </div>
   <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
     <button class="rcl-btn" onclick="fecharRelatorio()">✕ Fechar</button>
-    <button class="rcl-btn" style="background:#c9a84c;color:#1a1a2e" onclick="copiarRelatorio(this)">📋 Copiar</button>
-    <button class="rcl-btn" style="background:#1565c0" onclick="enviarEmail()">✉️ Enviar Email</button>
+    <button class="rcl-btn" style="background:#c9a84c;color:#1a1a2e" id="btn-copiar-fmt" onclick="copiarRelatorioFormatado(this)">📋 Copiar p/ Email</button>
+    <button class="rcl-btn" style="background:#1565c0" onclick="abrirEmailVazio()">✉️ Abrir Email</button>
     <button class="rcl-btn" style="background:#2e7d32" onclick="window.print()">🖨 Imprimir</button>
   </div>
 </div>
@@ -986,18 +989,49 @@ function fallbackCopySup(text, btn) {
   document.body.removeChild(ta);
   setTimeout(function() { btn.textContent = '📋 Copiar'; }, 2000);
 }
-function enviarEmail() {
+async function copiarRelatorioFormatado(btn) {
+  var html = document.getElementById('report-content').innerHTML;
+  var loja = document.getElementById('loja').value || 'Visita';
+  var dataVal = document.getElementById('data').value;
+  var data = dataVal ? new Date(dataVal + 'T12:00:00').toLocaleDateString('pt-BR') : '';
+  // HTML completo com estilos inline para colar em qualquer email
+  var fullHtml = '<div style="font-family:Arial,sans-serif;max-width:700px;">' + html + '</div>';
+  var originalText = btn.textContent;
+  try {
+    if (navigator.clipboard && window.ClipboardItem) {
+      // Modo moderno: copia HTML formatado (mantém cores, tabelas, logo)
+      var blobHtml = new Blob([fullHtml], { type: 'text/html' });
+      var blobTxt  = new Blob([document.getElementById('report-content').innerText], { type: 'text/plain' });
+      await navigator.clipboard.write([new ClipboardItem({ 'text/html': blobHtml, 'text/plain': blobTxt })]);
+    } else {
+      // Fallback: copia texto puro
+      await navigator.clipboard.writeText(document.getElementById('report-content').innerText);
+    }
+    btn.textContent = '✅ Copiado! Cole no Gmail';
+    btn.style.background = '#2e7d32';
+    setTimeout(function(){ btn.textContent = originalText; btn.style.background = '#c9a84c'; }, 3000);
+  } catch(e) {
+    // Último fallback: seleção manual
+    var range = document.createRange();
+    range.selectNode(document.getElementById('report-content'));
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    btn.textContent = '✅ Selecionado! Copie (Cmd+C)';
+    setTimeout(function(){ btn.textContent = originalText; window.getSelection().removeAllRanges(); }, 4000);
+  }
+}
+
+function abrirEmailVazio() {
   var to = document.getElementById('email-to').value.trim();
-  if (!to) { document.getElementById('email-to').focus(); return; }
   var cc = document.getElementById('email-cc').value.trim();
-  var text = document.getElementById('report-content').innerText;
   var loja = document.getElementById('loja').value || 'Visita';
   var dataVal = document.getElementById('data').value;
   var data = dataVal ? new Date(dataVal + 'T12:00:00').toLocaleDateString('pt-BR') : '';
   var subject = encodeURIComponent('Supervisão First Class – ' + loja + (data ? ' – ' + data : ''));
-  var body = encodeURIComponent(text);
+  var hint = encodeURIComponent('(Cole aqui o relatório copiado — use o botão "Copiar p/ Email" antes)');
   var ccPart = cc ? '&cc=' + encodeURIComponent(cc) : '';
-  window.location.href = 'mailto:' + encodeURIComponent(to) + '?subject=' + subject + ccPart + '&body=' + body;
+  var dest = to ? encodeURIComponent(to) : '';
+  window.location.href = 'mailto:' + dest + '?subject=' + subject + ccPart + '&body=' + hint;
 }
 
 // ── RELATÓRIO COM IA (GROQ) ──────────────────────────
