@@ -108,6 +108,34 @@
   }
   .section-title::after { content:''; flex:1; height:1px; background:rgba(201,168,76,0.2); }
 
+  /* PROFILE SELECTOR */
+  .profile-selector {
+    background:var(--dark2); border:1px solid rgba(201,168,76,0.2);
+    border-radius:12px; padding:16px 20px; margin-bottom:24px;
+    display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+  }
+  .profile-label { font-size:12px; font-weight:600; color:var(--text-muted); letter-spacing:0.08em; text-transform:uppercase; white-space:nowrap; }
+  .profile-select {
+    flex:1; min-width:200px;
+    background:rgba(255,255,255,0.04); border:1px solid rgba(201,168,76,0.25);
+    border-radius:8px; padding:9px 14px;
+    color:var(--text); font-family:'DM Sans',sans-serif; font-size:13px;
+    cursor:pointer; transition:all 0.2s ease;
+  }
+  .profile-select:hover { background:rgba(255,255,255,0.06); border-color:rgba(201,168,76,0.4); }
+  .profile-select:focus { outline:none; border-color:var(--gold); background:rgba(255,255,255,0.08); }
+  .profile-btn {
+    background:rgba(201,168,76,0.15); border:1px solid rgba(201,168,76,0.3);
+    color:var(--gold); font-size:11px; font-weight:600; letter-spacing:0.08em;
+    padding:8px 14px; border-radius:6px; cursor:pointer; transition:all 0.2s ease;
+    font-family:'DM Sans',sans-serif; white-space:nowrap;
+  }
+  .profile-btn:hover { background:rgba(201,168,76,0.25); border-color:var(--gold); }
+  .profile-status {
+    font-size:12px; color:var(--text-muted);
+    padding:8px 12px; background:rgba(255,255,255,0.02); border-radius:6px;
+  }
+
   /* Cards */
   .card {
     background:var(--dark2); border:1px solid rgba(255,255,255,0.06);
@@ -657,6 +685,17 @@
 
     <div class="section-title">Análise automática de currículo</div>
 
+    <!-- PROFILE SELECTOR -->
+    <div class="profile-selector">
+      <span class="profile-label">📌 Perfil Ativo:</span>
+      <select class="profile-select" id="profileSelect" onchange="switchProfile(this.value)">
+        <option value="vendedor_belem">Vendedor Belém</option>
+        <option value="vendedor_ananindeua">Vendedor Ananindeua</option>
+      </select>
+      <span class="profile-status" id="profileStatus">Carregando configurações...</span>
+      <button class="profile-btn" onclick="showConfigPanel()">⚙️ Config</button>
+    </div>
+
     <!-- UPLOAD ZONE -->
     <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()"
          ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
@@ -886,112 +925,126 @@ Continuamos na torcida pelo seu sucesso! 🌟
 
     <div class="card" onclick="toggle(this)">
       <div class="card-header">
-        <div class="card-left"><div class="card-icon">💼</div><div class="card-title">1. Experiência Profissional</div></div>
+        <div class="card-left"><div class="card-icon">💼</div><div class="card-title">1. Experiência em Vendas (Peso: 25%)</div></div>
         <span class="chevron">▼</span>
       </div>
       <div class="card-body"><div class="card-body-inner">
+        <p class="card-desc" style="margin-bottom:14px; font-size:13px;"><strong>Buscar exemplos concretos e reais.</strong> Candidatos que mentem usam respostas genéricas — quem tem experiência traz histórias com detalhes específicos.</p>
         <div class="perguntas">
-          <div class="pergunta">"Você já trabalhou com vendas? Onde e por quanto tempo?"</div>
-          <div class="pergunta">"Já trabalhou com metas de vendas? Como era a cobrança?"</div>
-          <div class="pergunta">"Já trabalhou com PA e TM?" <em>→ Explicar os termos se necessário</em></div>
-          <div class="pergunta">"Qual foi o produto mais desafiador que você já vendeu? Como conseguiu vender?"</div>
+          <div class="pergunta"><strong>"Conte-me sobre a venda mais difícil que você já fechou. Como você abordou o cliente relutante?"</strong> <em>→ Buscar: exemplo concreto, técnicas usadas, como se sentiu, qual foi o resultado</em></div>
+          <div class="pergunta"><strong>"Descreva uma vez que você NÃO bateu uma meta de vendas. O que aconteceu e o que você aprendeu?"</strong> <em>→ Buscar: Por que não bateu? O que tentou fazer para reverter? Mudou sua estratégia depois? Qual foi o resultado posteriormente?</em></div>
+          <div class="pergunta"><strong>"Um cliente entra na loja querendo exatamente o que você NÃO tem em estoque, mas você tem um produto similar mais caro. Como você aborda isso?"</strong> <em>→ Buscar: ofereceria o produto mais caro? Como explicaria a diferença? Se recusasse, o que faria?</em></div>
         </div>
         <div class="score-selector">
-          <p class="ss-label">Pontuação deste bloco:</p>
+          <p class="ss-label" style="margin-bottom:10px;"><strong>Pontuação deste bloco:</strong></p>
           <div class="ss-btns" id="ss-exp">
-            <button class="sbtn" onclick="setScore('exp', 0, this, event)">😞 Não atende &nbsp;<strong>0</strong></button>
-            <button class="sbtn" onclick="setScore('exp', 1, this, event)">😐 Atende parcialmente &nbsp;<strong>1</strong></button>
-            <button class="sbtn" onclick="setScore('exp', 2, this, event)">✅ Atende bem &nbsp;<strong>2</strong></button>
+            <button class="sbtn" onclick="setScore('exp', 1, this, event)">1️⃣ Iniciante</button>
+            <button class="sbtn" onclick="setScore('exp', 2, this, event)">2️⃣ Aceitável</button>
+            <button class="sbtn" onclick="setScore('exp', 3, this, event)">3️⃣ Forte</button>
+            <button class="sbtn" onclick="setScore('exp', 4, this, event)">4️⃣ Excelente</button>
           </div>
         </div>
+        <div id="exp-descriptor" class="descriptor-box" style="display:none; margin-top:12px; padding:12px; background:rgba(201,168,76,0.1); border-left:3px solid var(--gold); border-radius:4px; font-size:12px; line-height:1.5;"></div>
       </div></div>
     </div>
 
     <div class="card" onclick="toggle(this)">
       <div class="card-header">
-        <div class="card-left"><div class="card-icon">🗣️</div><div class="card-title">2. Comunicação e Atendimento</div></div>
+        <div class="card-left"><div class="card-icon">🗣️</div><div class="card-title">2. Relacionamento com Cliente (Peso: 25%)</div></div>
         <span class="chevron">▼</span>
       </div>
       <div class="card-body"><div class="card-body-inner">
+        <p class="card-desc" style="margin-bottom:14px; font-size:13px;"><strong>Avalie capacidade de entender necessidades e construir rapport.</strong> Candidatos empáticos trazem exemplos de clientes difíceis que se tornaram leais.</p>
         <div class="perguntas">
-          <div class="pergunta">"Como você costuma abordar um cliente que acabou de entrar na loja?"</div>
-          <div class="pergunta">"Se o cliente disser que está só olhando, o que você faria?"</div>
-          <div class="pergunta">"Como você explicaria a diferença entre um produto simples e um produto de linha premium?"</div>
+          <div class="pergunta"><strong>"Conte-me sobre um cliente difícil ou insatisfeito que você atendeu. Como você lidou com a situação?"</strong> <em>→ Buscar: Qual era o problema? Como descobriu o que realmente queria? Que ações tomou? Qual foi o resultado? O cliente voltou?</em></div>
+          <div class="pergunta"><strong>"Descreva uma situação em que você identificou uma necessidade que o cliente não havia mencionado."</strong> <em>→ Buscar: Como percebeu? Como apresentou a solução? O cliente apreciou e comprou? Por que conseguiu identificar isso?</em></div>
+          <div class="pergunta"><strong>"Durante o atendimento, você nota que o cliente está com pressa, mas parece indeciso. Como você aborda isso?"</strong> <em>→ Buscar: Tenta apressar o processo? Pergunta se quer voltar depois? Como equilibra pressão com conforto?</em></div>
         </div>
         <div class="score-selector">
-          <p class="ss-label">Pontuação deste bloco:</p>
+          <p class="ss-label" style="margin-bottom:10px;"><strong>Pontuação deste bloco:</strong></p>
           <div class="ss-btns" id="ss-com">
-            <button class="sbtn" onclick="setScore('com', 0, this, event)">😞 Não atende &nbsp;<strong>0</strong></button>
-            <button class="sbtn" onclick="setScore('com', 1, this, event)">😐 Atende parcialmente &nbsp;<strong>1</strong></button>
-            <button class="sbtn" onclick="setScore('com', 2, this, event)">✅ Atende bem &nbsp;<strong>2</strong></button>
+            <button class="sbtn" onclick="setScore('com', 1, this, event)">1️⃣ Iniciante</button>
+            <button class="sbtn" onclick="setScore('com', 2, this, event)">2️⃣ Aceitável</button>
+            <button class="sbtn" onclick="setScore('com', 3, this, event)">3️⃣ Forte</button>
+            <button class="sbtn" onclick="setScore('com', 4, this, event)">4️⃣ Excelente</button>
           </div>
         </div>
+        <div id="com-descriptor" class="descriptor-box" style="display:none; margin-top:12px; padding:12px; background:rgba(201,168,76,0.1); border-left:3px solid var(--gold); border-radius:4px; font-size:12px; line-height:1.5;"></div>
       </div></div>
     </div>
 
     <div class="card" onclick="toggle(this)">
       <div class="card-header">
-        <div class="card-left"><div class="card-icon">⏰</div><div class="card-title">3. Responsabilidade e Assiduidade</div></div>
+        <div class="card-left"><div class="card-icon">⏰</div><div class="card-title">3. Responsabilidade & Integridade (Peso: 20%)</div></div>
         <span class="chevron">▼</span>
       </div>
       <div class="card-body"><div class="card-body-inner">
+        <p class="card-desc" style="margin-bottom:14px; font-size:13px;"><strong>Integridade não pode ser ensinada.</strong> Observe se o candidato escolhe "fazer o certo" mesmo quando ninguém está vendo, ou se apenas segue regras quando há supervisão.</p>
         <div class="perguntas">
-          <div class="pergunta">"Nos seus empregos anteriores, como era sua pontualidade e frequência?"</div>
-          <div class="pergunta">"O que você faz para se organizar e não ter problemas com atrasos ou faltas?"</div>
-          <div class="pergunta">"Se um imprevisto acontecer e você não puder ir trabalhar, como você costuma avisar a empresa?"</div>
+          <div class="pergunta"><strong>"Conte-me sobre uma vez em que você teve que escolher entre uma venda fácil (desonesta) e fazer o certo. O que você fez?"</strong> <em>→ Buscar: Qual era a pressão ou tentação? O que te fez escolher o caminho certo? Como foi recebido pelo seu gestor? Se arrependeu?</em></div>
+          <div class="pergunta"><strong>"Descreva um compromisso que você fez com um cliente e não conseguiu cumprir. Como você resolveu?"</strong> <em>→ Buscar: Qual era o compromisso? Por que não conseguiu cumprir? Como comunicou o problema? Como reparou o dano?</em></div>
+          <div class="pergunta"><strong>"Você percebe que seu colega está enganando um cliente. Ninguém vai descobrir. O que você faz?"</strong> <em>→ Buscar: Confronta o colega? Avisa o cliente? Fala com o gestor? Por que escolheria esse caminho?</em></div>
         </div>
         <div class="score-selector">
-          <p class="ss-label">Pontuação deste bloco:</p>
+          <p class="ss-label" style="margin-bottom:10px;"><strong>Pontuação deste bloco:</strong></p>
           <div class="ss-btns" id="ss-res">
-            <button class="sbtn" onclick="setScore('res', 0, this, event)">😞 Não atende &nbsp;<strong>0</strong></button>
-            <button class="sbtn" onclick="setScore('res', 1, this, event)">😐 Atende parcialmente &nbsp;<strong>1</strong></button>
-            <button class="sbtn" onclick="setScore('res', 2, this, event)">✅ Atende bem &nbsp;<strong>2</strong></button>
+            <button class="sbtn" onclick="setScore('res', 1, this, event)">1️⃣ Iniciante</button>
+            <button class="sbtn" onclick="setScore('res', 2, this, event)">2️⃣ Aceitável</button>
+            <button class="sbtn" onclick="setScore('res', 3, this, event)">3️⃣ Forte</button>
+            <button class="sbtn" onclick="setScore('res', 4, this, event)">4️⃣ Excelente</button>
           </div>
         </div>
+        <div id="res-descriptor" class="descriptor-box" style="display:none; margin-top:12px; padding:12px; background:rgba(201,168,76,0.1); border-left:3px solid var(--gold); border-radius:4px; font-size:12px; line-height:1.5;"></div>
       </div></div>
     </div>
 
     <div class="card" onclick="toggle(this)">
       <div class="card-header">
-        <div class="card-left"><div class="card-icon">🔥</div><div class="card-title">4. Motivação e Perfil Pessoal</div></div>
+        <div class="card-left"><div class="card-icon">🔥</div><div class="card-title">4. Resiliência & Motivação (Peso: 15%)</div></div>
         <span class="chevron">▼</span>
       </div>
       <div class="card-body"><div class="card-body-inner">
+        <p class="card-desc" style="margin-bottom:14px; font-size:13px;"><strong>Resiliência é essencial em vendas.</strong> Candidatos maduros trazem histórias de períodos difíceis e como superaram — não desistem nas primeiras rejeições.</p>
         <div class="perguntas">
-          <div class="pergunta">"O que mais te motiva em um trabalho de vendas: o salário fixo, as metas ou as premiações rápidas?"</div>
-          <div class="pergunta">"Como você se sente trabalhando sob pressão para bater metas?"</div>
-          <div class="pergunta">"Você prefere trabalhar sozinho ou em equipe? Por quê?"</div>
+          <div class="pergunta"><strong>"Conte-me sobre um período em que suas vendas caíram significativamente. Como você manteve sua motivação?"</strong> <em>→ Buscar: Quanto tempo durou? Como se sentiu? Que ações tomou para melhorar? Qual foi o resultado?</em></div>
+          <div class="pergunta"><strong>"Descreva uma rejeição memorável de um cliente. Como você lidou com isso?"</strong> <em>→ Buscar: O que o cliente disse? Como se sentiu? Tentou novamente depois? O que aprendeu com aquela rejeição?</em></div>
+          <div class="pergunta"><strong>"Você perdeu uma grande venda para um concorrente. Seu gerente está desapontado. Como você reage?"</strong> <em>→ Buscar: Analisa o que deu errado? Se culpa ou busca soluções? Como se motiva para continuar?</em></div>
         </div>
         <div class="score-selector">
-          <p class="ss-label">Pontuação deste bloco:</p>
+          <p class="ss-label" style="margin-bottom:10px;"><strong>Pontuação deste bloco:</strong></p>
           <div class="ss-btns" id="ss-mot">
-            <button class="sbtn" onclick="setScore('mot', 0, this, event)">😞 Não atende &nbsp;<strong>0</strong></button>
-            <button class="sbtn" onclick="setScore('mot', 1, this, event)">😐 Atende parcialmente &nbsp;<strong>1</strong></button>
-            <button class="sbtn" onclick="setScore('mot', 2, this, event)">✅ Atende bem &nbsp;<strong>2</strong></button>
+            <button class="sbtn" onclick="setScore('mot', 1, this, event)">1️⃣ Iniciante</button>
+            <button class="sbtn" onclick="setScore('mot', 2, this, event)">2️⃣ Aceitável</button>
+            <button class="sbtn" onclick="setScore('mot', 3, this, event)">3️⃣ Forte</button>
+            <button class="sbtn" onclick="setScore('mot', 4, this, event)">4️⃣ Excelente</button>
           </div>
         </div>
+        <div id="mot-descriptor" class="descriptor-box" style="display:none; margin-top:12px; padding:12px; background:rgba(201,168,76,0.1); border-left:3px solid var(--gold); border-radius:4px; font-size:12px; line-height:1.5;"></div>
       </div></div>
     </div>
 
     <div class="card" onclick="toggle(this)">
       <div class="card-header">
-        <div class="card-left"><div class="card-icon">📏</div><div class="card-title">5. Alinhamento com as Regras da Empresa</div></div>
+        <div class="card-left"><div class="card-icon">📏</div><div class="card-title">5. Aprendizado & Coachability (Peso: 15%)</div></div>
         <span class="chevron">▼</span>
       </div>
       <div class="card-body"><div class="card-body-inner">
+        <p class="card-desc" style="margin-bottom:14px; font-size:13px;"><strong>Coachability é essencial para evolução.</strong> Candidatos dispostos a aprender trazem exemplos de feedback que receberam e como mudaram comportamento em resposta.</p>
         <div class="perguntas">
-          <div class="pergunta">"Aqui na empresa, não pode sair zerado em vendas no dia. Como você faria para evitar isso?"</div>
-          <div class="pergunta">"Nossas premiações são pagas rapidamente, mas exigem disciplina. Você se sente confortável com esse tipo de sistema?"</div>
-          <div class="pergunta">"Você entende que manter consistência é tão importante quanto vender bem? Como faria para manter o ritmo?"</div>
+          <div class="pergunta"><strong>"Conte-me sobre um feedback difícil que você recebeu. Como você reagiu e o que mudou?"</strong> <em>→ Buscar: Qual era o feedback? Como se sentiu inicialmente? Foi justo? Que mudanças você fez? Qual foi o impacto?</em></div>
+          <div class="pergunta"><strong>"Descreva uma habilidade de vendas que você desenvolveu por conta própria."</strong> <em>→ Buscar: Qual era a motivação? Como aprendeu (curso, mentor, prática)? Como sabe que melhorou? Aplica nas vendas?</em></div>
+          <div class="pergunta"><strong>"Seu gerente quer que você use uma técnica de vendas nova que você acha que não funciona. Como você aborda isso?"</strong> <em>→ Buscar: Simplesmente recusa? Testa com mente aberta? Como comunica suas dúvidas? Que resultado esperaria?</em></div>
         </div>
         <div class="score-selector">
-          <p class="ss-label">Pontuação deste bloco:</p>
+          <p class="ss-label" style="margin-bottom:10px;"><strong>Pontuação deste bloco:</strong></p>
           <div class="ss-btns" id="ss-ali">
-            <button class="sbtn" onclick="setScore('ali', 0, this, event)">😞 Não atende &nbsp;<strong>0</strong></button>
-            <button class="sbtn" onclick="setScore('ali', 1, this, event)">😐 Atende parcialmente &nbsp;<strong>1</strong></button>
-            <button class="sbtn" onclick="setScore('ali', 2, this, event)">✅ Atende bem &nbsp;<strong>2</strong></button>
+            <button class="sbtn" onclick="setScore('ali', 1, this, event)">1️⃣ Iniciante</button>
+            <button class="sbtn" onclick="setScore('ali', 2, this, event)">2️⃣ Aceitável</button>
+            <button class="sbtn" onclick="setScore('ali', 3, this, event)">3️⃣ Forte</button>
+            <button class="sbtn" onclick="setScore('ali', 4, this, event)">4️⃣ Excelente</button>
           </div>
         </div>
+        <div id="ali-descriptor" class="descriptor-box" style="display:none; margin-top:12px; padding:12px; background:rgba(201,168,76,0.1); border-left:3px solid var(--gold); border-radius:4px; font-size:12px; line-height:1.5;"></div>
       </div></div>
     </div>
 
@@ -1026,6 +1079,53 @@ Continuamos na torcida pelo seu sucesso! 🌟
       <div class="info-box" style="margin-top:14px;">
         <strong>Referência:</strong> 6+ sinais positivos marcados → forte aderência ao perfil First Class. Abaixo de 4 → reavalie antes de avançar.
       </div>
+    </div>
+
+    <div class="section-title">📋 Debrief Profissional — após a entrevista</div>
+    <div class="card" onclick="toggle(this)">
+      <div class="card-header">
+        <div class="card-left"><div class="card-icon">📝</div><div class="card-title">Template de Avaliação para Documentação</div></div>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="card-body"><div class="card-body-inner">
+        <p class="card-desc" style="margin-bottom:14px; font-size:13px;"><strong>Preencha após a entrevista para manter histórico profissional.</strong> Este registro protege a empresa e documenta a decisão tomada.</p>
+        <div class="template-box" style="background:var(--dark3); padding:16px; border-radius:8px; font-size:13px; line-height:1.6;">
+<strong>CANDIDATO:</strong> _____________________________ | <strong>DATA:</strong> ___________<br>
+<strong>ENTREVISTADOR:</strong> _____________________________<br>
+<strong>POSIÇÃO:</strong> Vendedor (Belém / Ananindeua)<br>
+<br>
+<strong>AVALIAÇÃO POR COMPETÊNCIA:</strong><br>
+📊 Experiência em Vendas (25%): Nível [ ] 1 [ ] 2 [ ] 3 [ ] 4 | Pontos: ___<br>
+📊 Relacionamento com Cliente (25%): Nível [ ] 1 [ ] 2 [ ] 3 [ ] 4 | Pontos: ___<br>
+📊 Responsabilidade & Integridade (20%): Nível [ ] 1 [ ] 2 [ ] 3 [ ] 4 | Pontos: ___<br>
+📊 Resiliência & Motivação (15%): Nível [ ] 1 [ ] 2 [ ] 3 [ ] 4 | Pontos: ___<br>
+📊 Aprendizado & Coachability (15%): Nível [ ] 1 [ ] 2 [ ] 3 [ ] 4 | Pontos: ___<br>
+<br>
+<strong>PONTUAÇÃO TOTAL:</strong> _______ / 10 pontos<br>
+<br>
+<strong>SINAIS COMPORTAMENTAIS POSITIVOS:</strong> _______ / 8<br>
+<br>
+<strong>PONTOS FORTES OBSERVADOS:</strong><br>
+_________________________________________________________________<br>
+<br>
+<strong>PONTOS DE ATENÇÃO:</strong><br>
+_________________________________________________________________<br>
+<br>
+<strong>RECOMENDAÇÃO FINAL:</strong><br>
+[ ] ✅ Chamar para Período de Experiência (score 8-10)<br>
+[ ] ✅ Chamar com Supervisão Inicial (score 6-7)<br>
+[ ] ⚡ Considerar com Cautela (score 4-5)<br>
+[ ] ❌ Não Avançar no Processo (score <4)<br>
+<br>
+<strong>JUSTIFICATIVA DA DECISÃO:</strong><br>
+_________________________________________________________________<br>
+<br>
+<strong>PRÓXIMOS PASSOS:</strong> [ ] Enviar WhatsApp de triagem [ ] Descartar [ ] Banco de Talentos<br>
+        </div>
+        <div class="info-box" style="margin-top:14px;">
+          <strong>💡 Por que documentar:</strong> Protege a empresa contra reclamações futuras. Deixa claro que a decisão foi profissional e baseada em critérios objetivos, não em discriminação.
+        </div>
+      </div></div>
     </div>
 
   </div>
@@ -1103,6 +1203,87 @@ Continuamos na torcida pelo seu sucesso! 🌟
           <div class="t-item" onclick="toggleTracker(this)"><span class="t-box">✓</span><span class="t-label">Formalizar efetivação ou encerramento</span></div>
         </div>
       </div>
+    </div>
+
+    <!-- KPIs ESTRUTURADOS POR FASE -->
+    <div class="section-title">📊 KPIs de Acompanhamento — Fases de Avaliação</div>
+
+    <div class="card" onclick="toggle(this)">
+      <div class="card-header">
+        <div class="card-left"><div class="card-icon">📈</div><div class="card-title">Fase 1: Semanas 1–4 (Integração e Aprendizagem)</div></div>
+        <span class="phase-badge phase-1">Semanas 1-4</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="card-body"><div class="card-body-inner">
+        <p class="card-desc">Foco em aprendizagem e integração. Não esperar resultado de vendas alto. O objetivo é garantir que o candidato entendeu sistemas, produtos e regras.</p>
+        <table class="prem-table">
+          <thead><tr><th>KPI</th><th>Medida</th><th>Meta Mínima</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Assiduidade</strong></td><td>% de dias trabalhados</td><td>✅ 95%+ (máx 1 falta)</td></tr>
+            <tr><td><strong>Pontualidade</strong></td><td>Atrasos de mais de 5 min</td><td>✅ 0 atrasos</td></tr>
+            <tr><td><strong>Uniforme/Apresentação</strong></td><td>Conformidade com código de vestimenta</td><td>✅ 100% dos dias</td></tr>
+            <tr><td><strong>PA (Pedido Agregado)</strong></td><td>Média de vendas por cliente</td><td>— Observar (não penalizar)</td></tr>
+            <tr><td><strong>TM (Ticket Médio)</strong></td><td>Média de valor por venda</td><td>— Observar (não penalizar)</td></tr>
+            <tr><td><strong>Conhecimento de Produto</strong></td><td>Teste informal ou avaliação prática</td><td>⚠️ Demonstrar 70%+ das informações</td></tr>
+            <tr><td><strong>Feedback Positivo</strong></td><td>Relatos de clientes satisfeitos</td><td>— Buscar pelo menos 1 por semana</td></tr>
+          </tbody>
+        </table>
+        <div class="info-box" style="margin-top:12px;">
+          <strong>📋 Decisão aos 30 dias:</strong> Se assiduidade, pontualidade e comportamento estão OK, renovar contrato por mais 30 dias mesmo que PA/TM sejam baixos.
+        </div>
+      </div></div>
+    </div>
+
+    <div class="card" onclick="toggle(this)">
+      <div class="card-header">
+        <div class="card-left"><div class="card-icon">📈</div><div class="card-title">Fase 2: Semanas 5–8 (Desenvolvimento e Independência)</div></div>
+        <span class="phase-badge phase-2">Semanas 5-8</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="card-body"><div class="card-body-inner">
+        <p class="card-desc">O colaborador agora trabalha de forma mais independente. Expectativa de melhora gradual em PA e TM conforme ganha experiência e confiança.</p>
+        <table class="prem-table">
+          <thead><tr><th>KPI</th><th>Medida</th><th>Meta Esperada</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Assiduidade</strong></td><td>% de dias trabalhados</td><td>✅ 95%+ (máx 1 falta)</td></tr>
+            <tr><td><strong>Pontualidade</strong></td><td>Atrasos de mais de 5 min</td><td>✅ 0 atrasos</td></tr>
+            <tr><td><strong>PA (Pedido Agregado)</strong></td><td>Média por cliente</td><td>⚡ Mostrar crescimento semana a semana</td></tr>
+            <tr><td><strong>TM (Ticket Médio)</strong></td><td>Média de valor por venda</td><td>⚡ Mostrar crescimento semana a semana</td></tr>
+            <tr><td><strong>Autonomia</strong></td><td>% de vendas sem supervisão direta</td><td>✅ 80%+ das vendas independentes</td></tr>
+            <tr><td><strong>Feedback de Equipe</strong></td><td>Avaliação interna (colegas)</td><td>✅ Relacionamento respeitoso</td></tr>
+            <tr><td><strong>Adesão a Premiações</strong></td><td>Participação em dinâmicas</td><td>✅ Engajamento visível</td></tr>
+          </tbody>
+        </table>
+        <div class="info-box" style="margin-top:12px;">
+          <strong>📋 Decisão aos 60 dias:</strong> Se assiduidade e pontualidade OK + mostrou progresso em PA/TM, avançar para fase 3. Se PA/TM não evoluem, investigar impedimentos (falta de interesse, dificuldade técnica, etc).
+        </div>
+      </div></div>
+    </div>
+
+    <div class="card" onclick="toggle(this)">
+      <div class="card-header">
+        <div class="card-left"><div class="card-icon">📈</div><div class="card-title">Fase 3: Semanas 9–12 (Consolidação e Efetivação)</div></div>
+        <span class="phase-badge phase-3">Semanas 9-12</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="card-body"><div class="card-body-inner">
+        <p class="card-desc">Semanas finais de decisão. Consolidar desempenho e avaliar se está pronto para ser efetivado ou se necessita rescisão.</p>
+        <table class="prem-table">
+          <thead><tr><th>KPI</th><th>Medida</th><th>Meta para Efetivação</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Assiduidade</strong></td><td>% de dias no período</td><td>✅ 95%+ (máx 1 falta/mês)</td></tr>
+            <tr><td><strong>Pontualidade</strong></td><td>Atrasos não justificados</td><td>✅ 0 atrasos</td></tr>
+            <tr><td><strong>PA Mínimo</strong></td><td>Pedido Agregado (Vendedor Belém)</td><td>✅ ≥ R$ 150-200 (conforme perfil)</td></tr>
+            <tr><td><strong>TM Mínimo</strong></td><td>Ticket Médio (Vendedor Belém)</td><td>✅ ≥ R$ 80-100 (conforme perfil)</td></tr>
+            <tr><td><strong>Postura Profissional</strong></td><td>Avaliação 360º (gestor + equipe)</td><td>✅ Nível 3 ou 4 em maturidade</td></tr>
+            <tr><td><strong>Aprendizados Implementados</strong></td><td>Feedback recebido vs aplicado</td><td>✅ 80%+ de feedback implementado</td></tr>
+            <tr><td><strong>Regularidade</strong></td><td>Consistência de desempenho semana a semana</td><td>✅ Sem grandes variações negativas</td></tr>
+          </tbody>
+        </table>
+        <div class="info-box" style="margin-top:12px;">
+          <strong>📋 Decisão aos 90 dias:</strong> Avaliar todos os KPIs acima. Se 6+ critérios estão ✅, EFETIVAR. Se 3-5 estão ✅, reavalie necessidade de treinamento adicional ou desempenho é incompatível (rescisão). Se menos de 3, NÃO EFETIVAR.
+        </div>
+      </div></div>
     </div>
 
     <!-- ONBOARDING DETALHADO -->
@@ -1606,6 +1787,41 @@ Continuamos na torcida pelo seu sucesso! 🌟
 
   // ---- INTERVIEW SCORING ----
   var interviewScores = { exp: null, com: null, res: null, mot: null, ali: null };
+
+  // Descritores profissionais de scoring 1-4 para cada competência
+  var DESCRITORES = {
+    'exp': {
+      1: '<strong>Nível 1 — Iniciante/Insuficiente:</strong> Respostas vagas, sem exemplos específicos. Demonstra falta de compreensão real de técnicas de venda. Não traz casos concretos nem reflete sobre suas ações.',
+      2: '<strong>Nível 2 — Em Desenvolvimento/Aceitável:</strong> Exemplos básicos mas com pouca profundidade. Reconhece a importância de vender, mas aplicação inconsistente. Disposição para aprender, mas precisa de supervisão intensa.',
+      3: '<strong>Nível 3 — Competente/Forte:</strong> Exemplos claros e situações reais bem descritas. Demonstra compreensão de técnicas de negociação. Reflexão genuína sobre aprendizados. Próativo em melhorias.',
+      4: '<strong>Nível 4 — Excelente/Excepcional:</strong> Histórias ricas com contexto, desafios e resultados mensuráveis. Insights profundos sobre próprio desenvolvimento. Demonstra evolução clara e maturidade profissional.'
+    },
+    'com': {
+      1: '<strong>Nível 1 — Iniciante/Insuficiente:</strong> Dificuldade em se comunicar. Não demonstra empatia com clientes. Respostas genéricas ou evasivas sobre relacionamento.',
+      2: '<strong>Nível 2 — Em Desenvolvimento/Aceitável:</strong> Comunicação básica, mas com dificuldades. Reconhece a importância de ouvir o cliente, mas não traz exemplos concretos de como fez isso bem.',
+      3: '<strong>Nível 3 — Competente/Forte:</strong> Comunica-se com clareza. Traz exemplos reais de clientes difíceis transformados em leais. Demonstra capacidade de entender necessidades além do óbvio.',
+      4: '<strong>Nível 4 — Excelente/Excepcional:</strong> Relacionamento natural e autêntico. Exemplos ricos de como identificou necessidades não mencionadas. Demonstra empatia genuína e respeito ao cliente.'
+    },
+    'res': {
+      1: '<strong>Nível 1 — Iniciante/Insuficiente:</strong> Respostas que sugerem desonestidade ou falta de integridade. Escolheria o caminho fácil mesmo que errado. Não compreende importância de integridade.',
+      2: '<strong>Nível 2 — Em Desenvolvimento/Aceitável:</strong> Reconhece integridade, mas apenas quando está sendo observado. Exemplos vagos de situações éticas. Precisaria de supervisão para manter padrões.',
+      3: '<strong>Nível 3 — Competente/Forte:</strong> Traz exemplos reais de escolhas éticas difíceis. Compreende consequências a longo prazo de atos desonestos. Comunica problemas proativamente.',
+      4: '<strong>Nível 4 — Excelente/Excepcional:</strong> Integridade inabalável em histórias concretas. Demonstra coragem de fazer o certo mesmo sob pressão. Exemplar para outros membros da equipe.'
+    },
+    'mot': {
+      1: '<strong>Nível 1 — Iniciante/Insuficiente:</strong> Desistiu em períodos difíceis. Não consegue se mover sem motivação externa constante. Histórias de abandono de metas.',
+      2: '<strong>Nível 2 — Em Desenvolvimento/Aceitável:</strong> Tem dificuldade com rejeição. Períodos de baixa motivação, mas eventualmente se recupera. Precisa de apoio frequente do gestor.',
+      3: '<strong>Nível 3 — Competente/Forte:</strong> Liida bem com rejeição. Exemplos de períodos difíceis superados com seu próprio esforço. Busca aprender com fracassos.',
+      4: '<strong>Nível 4 — Excelente/Excepcional:</strong> Resiliência notável em histórias específicas. Transforma rejeições em oportunidades de aprendizado. Motiva outros com seu exemplo.'
+    },
+    'ali': {
+      1: '<strong>Nível 1 — Iniciante/Insuficiente:</strong> Resiste a feedback. Não vê valor em aprender coisas novas. Apego a "sua forma de fazer".',
+      2: '<strong>Nível 2 — Em Desenvolvimento/Aceitável:</strong> Ouve feedback, mas sem sempre implementar. Aprende lentamente. Precisa de acompanhamento próximo para mudar comportamento.',
+      3: '<strong>Nível 3 — Competente/Forte:</strong> Recebe feedback construtivamente. Exemplos de habilidades desenvolvidas por iniciativa própria. Testa novas abordagens com mente aberta.',
+      4: '<strong>Nível 4 — Excelente/Excepcional:</strong> Busca ativamente feedback. Implementa mudanças rapidamente. Exemplos de transformação profissional documentada. Inspira aprendizado na equipe.'
+    }
+  };
+
   function setScore(block, val, btn, e) {
     if (e) e.stopPropagation();
     interviewScores[block] = val;
@@ -1614,6 +1830,14 @@ Continuamos na torcida pelo seu sucesso! 🌟
     var bbEl = document.getElementById('bb-' + block);
     var bvEl = document.getElementById('bv-' + block);
     if (bbEl && bvEl) { bbEl.classList.remove('b-0','b-1','b-2'); bbEl.classList.add('b-' + val); bvEl.textContent = val; }
+
+    // Mostrar descritor ao marcar pontuação
+    var descriptorEl = document.getElementById(block + '-descriptor');
+    if (descriptorEl && DESCRITORES[block] && DESCRITORES[block][val]) {
+      descriptorEl.innerHTML = DESCRITORES[block][val];
+      descriptorEl.style.display = 'block';
+    }
+
     updateInterviewScore();
   }
   function updateInterviewScore() {
@@ -1625,20 +1849,23 @@ Continuamos na torcida pelo seu sucesso! 🌟
     }
     var pct = (total / 10) * 100;
     document.getElementById('board-fill').style.width = pct + '%';
-    document.getElementById('board-total-text').textContent = total + ' / 10 pontos (' + counted + '/5 blocos)';
+    document.getElementById('board-total-text').textContent = total + ' / 10 pontos (' + counted + '/5 competências)';
     var recBox = document.getElementById('rec-box');
     if (counted < 5) {
       recBox.className = 'rec-box rec-pending';
-      recBox.innerHTML = '⏳ ' + counted + '/5 blocos avaliados — continue para ver a recomendação';
+      recBox.innerHTML = '⏳ ' + counted + '/5 competências avaliadas — continue para ver a recomendação final';
     } else if (total >= 8) {
       recBox.className = 'rec-box rec-green';
-      recBox.innerHTML = '✅ <strong>Perfil forte</strong> — Recomendado para contratação (score: ' + total + '/10)';
-    } else if (total >= 5) {
+      recBox.innerHTML = '✅ <strong>EXCELENTE</strong> — Chamar para período de experiência (score: ' + total + '/10)<br><small>Candidato preferencial: demonstra competências em nível 3-4 na maioria das áreas</small>';
+    } else if (total >= 6 && total < 8) {
+      recBox.className = 'rec-box rec-green';
+      recBox.innerHTML = '✅ <strong>BOM</strong> — Chamar com supervisão inicial (score: ' + total + '/10)<br><small>Competente com potencial de crescimento. Será necessário mentoring intenso nas primeiras semanas</small>';
+    } else if (total >= 4 && total < 6) {
       recBox.className = 'rec-box rec-yellow';
-      recBox.innerHTML = '⚡ <strong>Perfil médio</strong> — Avaliar com cautela antes de contratar (score: ' + total + '/10)';
+      recBox.innerHTML = '⚡ <strong>MÉDIO</strong> — Considerar com cautela (score: ' + total + '/10)<br><small>Habilidades em desenvolvimento. Precisa de treinamento e supervisão contínua. Avaliar viabilidade dado tempo disponível do gestor</small>';
     } else {
       recBox.className = 'rec-box rec-red';
-      recBox.innerHTML = '❌ <strong>Perfil abaixo do esperado</strong> — Não avançar no processo (score: ' + total + '/10)';
+      recBox.innerHTML = '❌ <strong>INSUFICIENTE</strong> — Não avançar (score: ' + total + '/10)<br><small>Competências críticas abaixo do esperado. Risco significativo de não cumprir período de experiência com sucesso</small>';
     }
   }
 
@@ -1661,7 +1888,351 @@ Continuamos na torcida pelo seu sucesso! 🌟
     updateTracker();
   }
 
-  // ---- PDF CV ANALYSIS ----
+  // ---- FILTROS CV (SYSTEM CONFIGURATION) ----
+  var FILTROS = null;
+  var PERFIL_ATIVO = 'vendedor_belem';
+
+  function carregarFiltros() {
+    // Tentar carregar do localStorage primeiro
+    var salvo = localStorage.getItem('filtros-cv-config');
+    if (salvo) {
+      try {
+        FILTROS = JSON.parse(salvo);
+        console.log('✅ Filtros carregados do localStorage');
+      } catch(e) {
+        console.warn('Erro ao carregar localStorage, usando padrão');
+        FILTROS = null;
+      }
+    }
+
+    // Se não há salvo, carregar do arquivo JSON
+    if (!FILTROS) {
+      fetch('/FIRST CLASS/filtros-cv.json')
+        .then(r => r.json())
+        .then(data => {
+          FILTROS = data;
+          PERFIL_ATIVO = FILTROS.perfil_padrao || 'vendedor_belem';
+          document.getElementById('profileSelect').value = PERFIL_ATIVO;
+          atualizarStatusPerfil();
+          console.log('✅ Filtros carregados do JSON');
+        })
+        .catch(e => {
+          console.warn('❌ Erro ao carregar filtros-cv.json, usando padrão hardcoded');
+          // FALLBACK: usar configuração padrão se arquivo não existir
+          FILTROS = {
+            "perfis": {
+              "vendedor_belem": {
+                "nome": "Vendedor Belém",
+                "ativo": true,
+                "salarioMinimo": 1641.70,
+                "salarioMaximo": 2500,
+                "idadeMinima": 30,
+                "experiencia": {
+                  "vendas": { "obrigatorio": true, "palavras": ["vendedor","vendedora","vendas","venda","atendimento","atendente","consultor","comercial","balcão","loja","negociação"], "peso": 2 },
+                  "varejo": { "obrigatorio": true, "palavras": ["varejo","loja","cama","mesa","banho","têxtil","confecção","moda","roupa","decoração","casa","moda casa","utilidades","enxoval"], "peso": 1 }
+                },
+                "estabilidade": { "minimo_anos": 1, "peso": 2, "permitir_rotatividade": false },
+                "historico": { "trocas_maximas": 3, "peso": 1 },
+                "redFlags": { "palavras": ["desempregado","demitido","rescisão","conflito","problema","atraso","negligência"], "peso": -2 },
+                "scoring": { "aprovado": 5, "cautela": 3, "rejeitar": 0 },
+                "observacoes": "Vendedor para lojas de cama, mesa e banho em Belém. Priorizar candidatos 30+ com experiência em varejo."
+              },
+              "vendedor_ananindeua": {
+                "nome": "Vendedor Ananindeua",
+                "ativo": true,
+                "salarioMinimo": 1780,
+                "salarioMaximo": 2600,
+                "idadeMinima": 28,
+                "experiencia": {
+                  "vendas": { "obrigatorio": true, "palavras": ["vendedor","vendedora","vendas","venda","atendimento","atendente","consultor","comercial","balcão","loja"], "peso": 2 },
+                  "varejo": { "obrigatorio": false, "palavras": ["varejo","loja","cama","mesa","banho","decoração","casa","moda"], "peso": 1 }
+                },
+                "estabilidade": { "minimo_anos": 1, "peso": 2, "permitir_rotatividade": true },
+                "historico": { "trocas_maximas": 4, "peso": 1 },
+                "redFlags": { "palavras": ["desempregado","demitido","rescisão","conflito"], "peso": -2 },
+                "scoring": { "aprovado": 4, "cautela": 2, "rejeitar": 0 },
+                "observacoes": "Vendedor para lojas em Ananindeua. Mais flexível que Belém. Aceita 28+ e maior rotatividade."
+              }
+            },
+            "perfil_padrao": "vendedor_belem",
+            "ultima_atualizacao": "2026-03-10T10:00:00Z",
+            "relatorio_analise": {
+              "total_cvs_analisados": 0,
+              "aprovados": 0,
+              "cautela": 0,
+              "rejeitados": 0,
+              "criterios": {
+                "vendas_encontrada": 0,
+                "varejo_encontrado": 0,
+                "estabilidade_ok": 0,
+                "historico_ok": 0,
+                "idade_ok": 0,
+                "red_flags_encontrados": 0
+              }
+            }
+          };
+          PERFIL_ATIVO = 'vendedor_belem';
+          document.getElementById('profileSelect').value = PERFIL_ATIVO;
+          atualizarStatusPerfil();
+        });
+    } else {
+      atualizarStatusPerfil();
+    }
+  }
+
+  function switchProfile(perfilId) {
+    PERFIL_ATIVO = perfilId;
+    if (FILTROS) {
+      FILTROS.perfil_padrao = perfilId;
+      localStorage.setItem('filtros-cv-config', JSON.stringify(FILTROS));
+      atualizarStatusPerfil();
+    }
+  }
+
+  function atualizarStatusPerfil() {
+    if (!FILTROS) return;
+    var perfil = FILTROS.perfis[PERFIL_ATIVO];
+    if (perfil) {
+      var status = '✓ ' + perfil.nome + ' · Idade ' + perfil.idadeMinima + '+ · R$ ' + perfil.salarioMinimo.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+      document.getElementById('profileStatus').textContent = status;
+    }
+  }
+
+// ====== PAINEL DE CONFIGURAÇÃO DE FILTROS ======
+
+function showConfigPanel() {
+  var html = `
+    <div id="configModal" style="
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+    " onclick="if(event.target.id=='configModal') closeConfigPanel();">
+      
+      <div style="
+        background: white;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 600px;
+        max-height: 80vh;
+        overflow-y: auto;
+        padding: 30px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      ">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h2 style="margin: 0; color: #333;">⚙️ Configurar Filtros</h2>
+          <button onclick="closeConfigPanel()" style="
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+          ">×</button>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+          <label style="display: block; margin-bottom: 10px; font-weight: bold;">
+            Perfil a configurar:
+          </label>
+          <select id="configProfileSelect" onchange="loadProfileConfig(this.value)" style="
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+          ">
+            <option value="vendedor_belem">Vendedor Belém</option>
+            <option value="vendedor_ananindeua">Vendedor Ananindeua</option>
+          </select>
+        </div>
+
+        <div id="configFormContainer"></div>
+
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+          <button onclick="saveConfig()" style="
+            flex: 1;
+            padding: 12px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+          ">💾 Salvar Configurações</button>
+          <button onclick="closeConfigPanel()" style="
+            flex: 1;
+            padding: 12px;
+            background: #999;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+          ">Fechar</button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.body.insertAdjacentHTML('beforeend', html);
+  loadProfileConfig('vendedor_belem');
+}
+
+function loadProfileConfig(perfilId) {
+  if (!FILTROS) return;
+  
+  var perfil = FILTROS.perfis[perfilId];
+  var html = `
+    <div style="display: grid; gap: 20px;">
+      
+      <!-- SEÇÃO 1: Dados Básicos -->
+      <div style="background: #f9f9f9; padding: 15px; border-radius: 6px;">
+        <h3 style="margin-top: 0; color: #333;">📋 Dados Básicos</h3>
+        
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">
+            Idade Mínima:
+          </label>
+          <input type="number" id="configIdadeMinima" value="${perfil.idadeMinima}" 
+            style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div>
+            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">
+              Salário Mínimo:
+            </label>
+            <input type="number" id="configSalarioMinimo" value="${perfil.salarioMinimo}" 
+              step="0.01" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+          </div>
+          <div>
+            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">
+              Salário Máximo:
+            </label>
+            <input type="number" id="configSalarioMaximo" value="${perfil.salarioMaximo}" 
+              step="0.01" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+          </div>
+        </div>
+      </div>
+
+      <!-- SEÇÃO 2: Critérios de Experiência -->
+      <div style="background: #f9f9f9; padding: 15px; border-radius: 6px;">
+        <h3 style="margin-top: 0; color: #333;">💼 Critérios de Experiência</h3>
+        
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">
+            Peso Experiência Vendas (0-5):
+          </label>
+          <input type="number" id="configPesoVendas" value="${perfil.experiencia.vendas.peso}" 
+            min="0" max="5" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+        </div>
+
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">
+            Peso Varejo (0-5):
+          </label>
+          <input type="number" id="configPesoVariejo" value="${perfil.experiencia.varejo.peso}" 
+            min="0" max="5" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+          <label style="display: flex; align-items: center; margin-top: 8px; cursor: pointer;">
+            <input type="checkbox" id="configVariejoObrigatorio" 
+              ${perfil.experiencia.varejo.obrigatorio ? 'checked' : ''} 
+              style="margin-right: 8px; cursor: pointer;">
+            <span>Varejo é obrigatório?</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- SEÇÃO 3: Histórico e Estabilidade -->
+      <div style="background: #f9f9f9; padding: 15px; border-radius: 6px;">
+        <h3 style="margin-top: 0; color: #333;">📊 Histórico & Estabilidade</h3>
+        
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">
+            Anos Mínimos de Estabilidade:
+          </label>
+          <input type="number" id="configEstabilidade" value="${perfil.estabilidade.minimo_anos}" 
+            min="0" max="10" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+        </div>
+
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">
+            Trocas de Emprego Máximas:
+          </label>
+          <input type="number" id="configTrocasMaximas" value="${perfil.historico.trocas_maximas}" 
+            min="1" max="10" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+        </div>
+      </div>
+
+      <!-- SEÇÃO 4: Scoring -->
+      <div style="background: #f9f9f9; padding: 15px; border-radius: 6px;">
+        <h3 style="margin-top: 0; color: #333;">🎯 Thresholds de Scoring</h3>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+          <div>
+            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">
+              ✅ Aprovado (≥):
+            </label>
+            <input type="number" id="configScoreAprovado" value="${perfil.scoring.aprovado}" 
+              min="0" max="10" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+          </div>
+          <div>
+            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">
+              ⚡ Cautela (≥):
+            </label>
+            <input type="number" id="configScoreCautela" value="${perfil.scoring.cautela}" 
+              min="0" max="10" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+          </div>
+          <div>
+            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">
+              ❌ Rejeitar (<):
+            </label>
+            <input type="number" id="configScoreRejeitar" value="${perfil.scoring.rejeitar}" 
+              min="0" max="10" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+          </div>
+        </div>
+      </div>
+
+    </div>
+  `;
+  
+  document.getElementById('configFormContainer').innerHTML = html;
+}
+
+function saveConfig() {
+  var perfilId = document.getElementById('configProfileSelect').value;
+  var perfil = FILTROS.perfis[perfilId];
+  
+  // Atualizar valores
+  perfil.idadeMinima = parseInt(document.getElementById('configIdadeMinima').value);
+  perfil.salarioMinimo = parseFloat(document.getElementById('configSalarioMinimo').value);
+  perfil.salarioMaximo = parseFloat(document.getElementById('configSalarioMaximo').value);
+  perfil.experiencia.vendas.peso = parseInt(document.getElementById('configPesoVendas').value);
+  perfil.experiencia.varejo.peso = parseInt(document.getElementById('configPesoVariejo').value);
+  perfil.experiencia.varejo.obrigatorio = document.getElementById('configVariejoObrigatorio').checked;
+  perfil.estabilidade.minimo_anos = parseInt(document.getElementById('configEstabilidade').value);
+  perfil.historico.trocas_maximas = parseInt(document.getElementById('configTrocasMaximas').value);
+  perfil.scoring.aprovado = parseInt(document.getElementById('configScoreAprovado').value);
+  perfil.scoring.cautela = parseInt(document.getElementById('configScoreCautela').value);
+  perfil.scoring.rejeitar = parseInt(document.getElementById('configScoreRejeitar').value);
+  
+  // Salvar em localStorage
+  localStorage.setItem('filtros-cv-config', JSON.stringify(FILTROS));
+  
+  alert('✅ Configurações salvas com sucesso!\n\nAs mudanças serão aplicadas na próxima análise de CV.');
+  closeConfigPanel();
+}
+
+function closeConfigPanel() {
+  var modal = document.getElementById('configModal');
+  if (modal) modal.remove();
+}
   var DROP_ZONE  = document.getElementById('uploadZone');
   var FILE_INPUT = document.getElementById('fileInput');
   var CV_RESULT  = document.getElementById('cvResult');
@@ -1731,74 +2302,119 @@ Continuamos na torcida pelo seu sucesso! 🌟
     CV_LOADING.classList.remove('visible');
     var t = text.toLowerCase();
 
-    // --- SCORE SYSTEM ---
+    // Se filtros ainda não carregaram, usar hardcoded
+    if (!FILTROS) {
+      console.warn('Filtros ainda não carregaram, aguardando...');
+      setTimeout(function() { analyzeCV(text, fileName); }, 500);
+      return;
+    }
+
+    var perfil = FILTROS.perfis[PERFIL_ATIVO];
+    if (!perfil) perfil = FILTROS.perfis['vendedor_belem'];
+
+    // --- SCORE SYSTEM (using active profile) ---
     var score = 0;
     var findings = [];
 
-    // +2: Experiência em vendas / atendimento
-    var salesKw = ['vendas', 'vendedor', 'vendedora', 'atendimento', 'atendente', 'venda', 'comercial', 'consultor', 'negociação', 'clientes', 'balcão'];
+    // CHECK: Experiência em vendas (required for both)
+    var salesKw = perfil.experiencia.vendas.palavras;
     var hasSales = salesKw.some(function(k) { return t.includes(k); });
     if (hasSales) {
-      score += 2;
-      findings.push({ label:'Experiência em vendas', value:'✅ Encontrada (+2 pts)', cls:'pos' });
+      score += perfil.experiencia.vendas.peso;
+      findings.push({ label:'Experiência em vendas', value:'✅ Encontrada (+' + perfil.experiencia.vendas.peso + ' pts)', cls:'pos' });
     } else {
-      findings.push({ label:'Experiência em vendas', value:'⚠️ Não identificada', cls:'neu' });
+      if (perfil.experiencia.vendas.obrigatorio) {
+        findings.push({ label:'Experiência em vendas', value:'❌ NÃO encontrada (obrigatório)', cls:'neg' });
+      } else {
+        findings.push({ label:'Experiência em vendas', value:'⚠️ Não identificada', cls:'neu' });
+      }
     }
 
-    // +1: Varejo (roupas, casa, decoração, moda)
-    var retailKw = ['varejo', 'loja', 'cama', 'mesa', 'banho', 'têxtil', 'confecção', 'moda', 'roupa', 'decoração', 'casa', 'moda casa', 'utilidades', 'enxoval'];
+    // CHECK: Varejo (optional for Ananindeua, required for Belém)
+    var retailKw = perfil.experiencia.varejo.palavras;
     var hasRetail = retailKw.some(function(k) { return t.includes(k); });
     if (hasRetail) {
-      score += 1;
-      findings.push({ label:'Varejo / segmento', value:'✅ Identificado (+1 pt)', cls:'pos' });
+      score += perfil.experiencia.varejo.peso;
+      findings.push({ label:'Varejo / segmento', value:'✅ Identificado (+' + perfil.experiencia.varejo.peso + ' pt)', cls:'pos' });
     } else {
-      findings.push({ label:'Varejo / segmento', value:'— Não identificado', cls:'neu' });
+      if (perfil.experiencia.varejo.obrigatorio) {
+        findings.push({ label:'Varejo / segmento', value:'❌ NÃO identificado (obrigatório)', cls:'neg' });
+      } else {
+        findings.push({ label:'Varejo / segmento', value:'— Opcional, não identificado', cls:'neu' });
+      }
     }
 
-    // +2: Estabilidade (pelo menos 1 vínculo com 1+ ano — detecção por padrão ano-ano)
+    // CHECK: Estabilidade (based on profile minimum)
     var yearRanges = (t.match(/\b(20\d{2})\s*[\-–—\/]\s*(20\d{2}|atual|presente)/g) || []);
     var hasLongTenure = yearRanges.some(function(r) {
       var nums = r.match(/20\d{2}/g);
       if (nums && nums.length >= 2) {
-        return (parseInt(nums[1]) - parseInt(nums[0])) >= 1;
+        return (parseInt(nums[1]) - parseInt(nums[0])) >= perfil.estabilidade.minimo_anos;
       }
       return r.includes('atual') || r.includes('presente');
     });
     if (hasLongTenure) {
-      score += 2;
-      findings.push({ label:'Estabilidade (1+ ano)', value:'✅ Detectada (+2 pts)', cls:'pos' });
+      score += perfil.estabilidade.peso;
+      findings.push({ label:'Estabilidade (' + perfil.estabilidade.minimo_anos + '+ ano)', value:'✅ Detectada (+' + perfil.estabilidade.peso + ' pts)', cls:'pos' });
     } else {
-      findings.push({ label:'Estabilidade (1+ ano)', value:'⚠️ Não detectada', cls:'neu' });
+      findings.push({ label:'Estabilidade (' + perfil.estabilidade.minimo_anos + '+ ano)', value:'⚠️ Não detectada', cls:'neu' });
     }
 
-    // +1: Histórico estável — penalizar se muitos empregos curtos
+    // CHECK: Histórico (job changes — check against profile's max job changes)
     var allYears = (t.match(/\b20\d{2}\b/g) || []).map(Number);
     var uniqueYears = allYears.filter(function(v, i, a) { return a.indexOf(v) === i; }).sort(function(a,b){return a-b;});
     var jobChanges = uniqueYears.length > 2 ? Math.floor(uniqueYears.length / 2) : 0;
-    if (jobChanges > 3) {
-      score -= 2;
+    if (jobChanges > perfil.historico.trocas_maximas) {
+      score += perfil.redFlags.peso; // penalizar como red flag
       findings.push({ label:'Rotatividade', value:'🚨 Alto número de trocas (−2 pts)', cls:'neg' });
     } else {
-      score += 1;
-      findings.push({ label:'Histórico de emprego', value:'✅ Aparentemente estável (+1 pt)', cls:'pos' });
+      score += perfil.historico.peso;
+      findings.push({ label:'Histórico de emprego', value:'✅ Dentro do limite (máx ' + perfil.historico.trocas_maximas + ' trocas)', cls:'pos' });
     }
 
-    // +1: Idade 30+ (by birth year or explicit mention)
-    var hasAge = /\b3[0-9]\s*anos|\b[45][0-9]\s*anos|nascimento[:\s]+\d{2}\/\d{2}\/(19[6-9]\d|200[0-6])/.test(t);
+    // CHECK: Idade mínima (based on profile)
+    var hasAge = new RegExp('\\b[' + perfil.idadeMinima.toString()[0] + '-9][0-9]\\s*anos|nascimento[:\\s]+\\d{2}/\\d{2}/(19[6-9]\\d|200[0-6])').test(t);
     var birthYear = t.match(/\b(19[6-9]\d|200[0-6])\b/);
     if (!hasAge && birthYear) {
       var age = 2026 - parseInt(birthYear[1]);
-      if (age >= 30) hasAge = true;
+      if (age >= perfil.idadeMinima) hasAge = true;
     }
     if (hasAge) {
       score += 1;
-      findings.push({ label:'Perfil de idade (30+)', value:'✅ Identificado (+1 pt)', cls:'pos' });
+      findings.push({ label:'Perfil de idade (' + perfil.idadeMinima + '+)', value:'✅ Identificado (+1 pt)', cls:'pos' });
     } else {
-      findings.push({ label:'Perfil de idade (30+)', value:'— Não identificado', cls:'neu' });
+      findings.push({ label:'Perfil de idade (' + perfil.idadeMinima + '+)', value:'— Não identificado', cls:'neu' });
     }
 
-    // Lacuna sem trabalho — simplificado: detectar se há mais de 1 ano entre empregos
-    // (difficult to reliably detect purely from text, so we skip advanced check)
+    // CHECK: Red flags (from profile)
+    var redFlagKw = perfil.redFlags.palavras;
+    var hasRedFlag = redFlagKw.some(function(k) { return t.includes(k); });
+    if (hasRedFlag) {
+      score += perfil.redFlags.peso; // usually -2
+      findings.push({ label:'Red flags detectados', value:'⚠️ Palavras de alerta encontradas (' + perfil.redFlags.peso + ' pts)', cls:'neg' });
+    } else {
+      findings.push({ label:'Red flags', value:'✅ Nenhum alerta detectado', cls:'pos' });
+    }
+
+    // CHECK: Coerência e Progressão (bonus validation)
+    var hasProgression = false;
+    var hasCoherence = false;
+
+    // Coerência: Se menciona vendas E varejo, há alinhamento entre experiências
+    if (hasSales && hasRetail) {
+      hasCoherence = true;
+      findings.push({ label:'Coerência profissional', value:'✅ Experiências alinhadas (vendas + varejo)', cls:'pos' });
+    } else if (hasSales && !perfil.experiencia.varejo.obrigatorio) {
+      findings.push({ label:'Coerência profissional', value:'— Vendas OK, varejo não mencionado (não crítico)', cls:'neu' });
+    }
+
+    // Progressão: Detectar se há evolução de cargo ao longo do tempo (vendedor → supervisor/gerente)
+    var hasProgression = t.includes('supervisor') || t.includes('gerente') || t.includes('coordenador') || t.includes('lider') || t.includes('líder');
+    if (hasProgression) {
+      findings.push({ label:'Progressão na carreira', value:'✅ Evolução detectada (supervisão/liderança)', cls:'pos' });
+    } else {
+      findings.push({ label:'Progressão na carreira', value:'— Mantém nível de operação', cls:'neu' });
+    }
 
     // Clamp score
     var finalScore = Math.max(0, Math.min(7, score));
@@ -1806,22 +2422,21 @@ Continuamos na torcida pelo seu sucesso! 🌟
     // --- KEYWORDS FOUND ---
     var allKw = salesKw.concat(retailKw).concat(['pontual', 'assiduidade', 'metas', 'resultado', 'equipe', 'proativo', 'responsável', 'organizado', 'comunicação', 'liderança', 'clt', 'cnpj', 'salário']);
     var foundKw = allKw.filter(function(k) { return t.includes(k); });
-    var warnKw  = ['desempregado', 'demitido', 'rescisão', 'conflito', 'problema', 'atraso'];
-    var foundWarn = warnKw.filter(function(k) { return t.includes(k); });
+    var foundWarn = redFlagKw.filter(function(k) { return t.includes(k); });
 
-    // --- VERDICT ---
+    // --- VERDICT (using profile scoring thresholds) ---
     var verdict, verdictCls, recText, fillColor;
-    if (finalScore >= 5) {
+    if (finalScore >= perfil.scoring.aprovado) {
       verdict = '✅ Chamar para triagem'; verdictCls = 'verdict-green';
-      recText = '<strong>📞 Recomendação:</strong> Perfil com boa aderência. Envie a mensagem de triagem via WhatsApp para confirmar disponibilidade aos sábados e pretensão salarial antes de agendar entrevista.';
+      recText = '<strong>📞 Recomendação:</strong> Perfil com boa aderência ao ' + perfil.nome + '. Envie a mensagem de triagem via WhatsApp para confirmar disponibilidade e pretensão salarial antes de agendar entrevista.';
       fillColor = 'var(--green)';
-    } else if (finalScore >= 3) {
+    } else if (finalScore >= perfil.scoring.cautela) {
       verdict = '⚡ Avaliar com cautela'; verdictCls = 'verdict-yellow';
-      recText = '<strong>⚡ Recomendação:</strong> Perfil mediano. Chamar apenas se não houver candidatos com pontuação mais alta. Confirmar experiência em vendas na triagem antes de agendar entrevista.';
+      recText = '<strong>⚡ Recomendação:</strong> Perfil mediano. Chamar apenas se não houver candidatos com pontuação mais alta. Confirmar critérios principais na triagem antes de agendar.';
       fillColor = '#FFC850';
     } else {
       verdict = '❌ Não avançar agora'; verdictCls = 'verdict-red';
-      recText = '<strong>❌ Recomendação:</strong> Perfil com baixa aderência para o momento. Guardar no banco de talentos para futura reavaliação.';
+      recText = '<strong>❌ Recomendação:</strong> Perfil com baixa aderência para o ' + perfil.nome + '. Guardar no banco de talentos para futura reavaliação.';
       fillColor = '#F08080';
     }
 
@@ -2218,6 +2833,9 @@ Continuamos na torcida pelo seu sucesso! 🌟
       } else { fallbackCopy(text, btn); }
     } catch(e) { fallbackCopy(text, btn); }
   }
+
+  // ---- INIT: Load profile filters ----
+  carregarFiltros();
 </script>
 </body>
 </html>
