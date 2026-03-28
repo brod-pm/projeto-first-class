@@ -1728,6 +1728,11 @@ _________________________________________________________________<br>
 </div>
 
 <script>
+  // ---- SANITIZAÇÃO ----
+  function esc(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
   // ---- PDF.js config ----
   if (typeof pdfjsLib !== 'undefined') {
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -2302,12 +2307,19 @@ function closeConfigPanel() {
     CV_LOADING.classList.remove('visible');
     var t = text.toLowerCase();
 
-    // Se filtros ainda não carregaram, usar hardcoded
+    // Se filtros ainda não carregaram, aguardar (máx 10 tentativas)
     if (!FILTROS) {
-      console.warn('Filtros ainda não carregaram, aguardando...');
+      analyzeCV._retries = (analyzeCV._retries || 0) + 1;
+      if (analyzeCV._retries > 10) {
+        analyzeCV._retries = 0;
+        console.error('Filtros não carregaram após 10 tentativas. Verifique o arquivo filtros-cv.json.');
+        return;
+      }
+      console.warn('Filtros ainda não carregaram, aguardando... (' + analyzeCV._retries + '/10)');
       setTimeout(function() { analyzeCV(text, fileName); }, 500);
       return;
     }
+    analyzeCV._retries = 0;
 
     var perfil = FILTROS.perfis[PERFIL_ATIVO];
     if (!perfil) perfil = FILTROS.perfis['vendedor_belem'];
@@ -2376,7 +2388,7 @@ function closeConfigPanel() {
     var hasAge = new RegExp('\\b[' + perfil.idadeMinima.toString()[0] + '-9][0-9]\\s*anos|nascimento[:\\s]+\\d{2}/\\d{2}/(19[6-9]\\d|200[0-6])').test(t);
     var birthYear = t.match(/\b(19[6-9]\d|200[0-6])\b/);
     if (!hasAge && birthYear) {
-      var age = 2026 - parseInt(birthYear[1]);
+      var age = new Date().getFullYear() - parseInt(birthYear[1]);
       if (age >= perfil.idadeMinima) hasAge = true;
     }
     if (hasAge) {
@@ -2428,7 +2440,7 @@ function closeConfigPanel() {
     var verdict, verdictCls, recText, fillColor;
     if (finalScore >= perfil.scoring.aprovado) {
       verdict = '✅ Chamar para triagem'; verdictCls = 'verdict-green';
-      recText = '<strong>📞 Recomendação:</strong> Perfil com boa aderência ao ' + perfil.nome + '. Envie a mensagem de triagem via WhatsApp para confirmar disponibilidade e pretensão salarial antes de agendar entrevista.';
+      recText = '<strong>📞 Recomendação:</strong> Perfil com boa aderência ao ' + esc(perfil.nome) + '. Envie a mensagem de triagem via WhatsApp para confirmar disponibilidade e pretensão salarial antes de agendar entrevista.';
       fillColor = 'var(--green)';
     } else if (finalScore >= perfil.scoring.cautela) {
       verdict = '⚡ Avaliar com cautela'; verdictCls = 'verdict-yellow';
@@ -2436,7 +2448,7 @@ function closeConfigPanel() {
       fillColor = '#FFC850';
     } else {
       verdict = '❌ Não avançar agora'; verdictCls = 'verdict-red';
-      recText = '<strong>❌ Recomendação:</strong> Perfil com baixa aderência para o ' + perfil.nome + '. Guardar no banco de talentos para futura reavaliação.';
+      recText = '<strong>❌ Recomendação:</strong> Perfil com baixa aderência para o ' + esc(perfil.nome) + '. Guardar no banco de talentos para futura reavaliação.';
       fillColor = '#F08080';
     }
 
@@ -2452,14 +2464,14 @@ function closeConfigPanel() {
 
     var findHtml = '';
     findings.forEach(function(f) {
-      findHtml += '<div class="cv-finding"><div class="cv-finding-label">' + f.label + '</div><div class="cv-finding-value ' + f.cls + '">' + f.value + '</div></div>';
+      findHtml += '<div class="cv-finding"><div class="cv-finding-label">' + esc(f.label) + '</div><div class="cv-finding-value ' + esc(f.cls) + '">' + esc(f.value) + '</div></div>';
     });
     document.getElementById('cvFindings').innerHTML = findHtml;
 
     var kwHtml = '';
     var uniqueKw = foundKw.filter(function(v,i,a){return a.indexOf(v)===i;}).slice(0,14);
-    uniqueKw.forEach(function(k) { kwHtml += '<span class="kw-tag">' + k + '</span>'; });
-    foundWarn.forEach(function(k) { kwHtml += '<span class="kw-tag red">⚠️ ' + k + '</span>'; });
+    uniqueKw.forEach(function(k) { kwHtml += '<span class="kw-tag">' + esc(k) + '</span>'; });
+    foundWarn.forEach(function(k) { kwHtml += '<span class="kw-tag red">⚠️ ' + esc(k) + '</span>'; });
     document.getElementById('cvKeywordTags').innerHTML = kwHtml || '<span style="color:var(--text-muted); font-size:12px;">Nenhuma palavra-chave relevante encontrada</span>';
     document.getElementById('cvRec').innerHTML = recText;
 

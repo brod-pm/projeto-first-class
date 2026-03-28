@@ -695,6 +695,11 @@
 </main>
 
 <script>
+// ── SANITIZAÇÃO ───────────────────────────────────────
+function esc(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
 // ── SCORE ─────────────────────────────────────────────
 var catMap = { visual:'cs-visual', oper:'cs-oper', equipe:'cs-equipe', dados:'cs-dados' };
 
@@ -755,7 +760,7 @@ for (var bi = 0; bi < addBtns.length; bi++) {
     var tbody = document.getElementById('tbody-' + cat);
     var tr = document.createElement('tr');
     tr.dataset.id = newId; tr.dataset.cat = cat;
-    tr.innerHTML = '<td>' + label.trim() + '</td>'
+    tr.innerHTML = '<td>' + esc(label.trim()) + '</td>'
       + '<td style="text-align:center"><div class="sg">'
       + '<input type="radio" name="st_' + newId + '" id="ok_' + newId + '" value="ok" onchange="score()"><label for="ok_' + newId + '">OK</label>'
       + '<input type="radio" name="st_' + newId + '" id="no_' + newId + '" value="notok" onchange="score()"><label for="no_' + newId + '">Não OK</label>'
@@ -871,7 +876,7 @@ function gerarRelatorio() {
       var rowBg = r % 2 === 0 ? '#fff' : '#f9f7f2';
       s += '<tr style="background:' + rowBg + ';">';
       s += '<td style="padding:9px 14px;font-family:Verdana,Arial,sans-serif;font-size:12px;color:#222;width:65%;">' + label;
-      if (obs && sp !== 'metas') s += '<br/><span style="font-size:11px;color:#777;font-style:italic;">Obs: ' + obs + '</span>';
+      if (obs && sp !== 'metas') s += '<br/><span style="font-size:11px;color:#777;font-style:italic;">Obs: ' + esc(obs) + '</span>';
       s += '</td>';
       s += '<td style="padding:9px 14px;font-family:Verdana,Arial,sans-serif;font-size:12px;text-align:right;">' + statusHtml + '</td>';
       s += '</tr>';
@@ -925,7 +930,7 @@ function gerarRelatorio() {
     s += '<tr style="background:#c62828;"><td style="padding:10px 16px;color:#fff;font-size:12px;font-weight:bold;font-family:Verdana,Arial,sans-serif;">⚠️ ITENS COM PENDÊNCIA (' + notOk.length + ')</td></tr>';
     for (var p = 0; p < notOk.length; p++) {
       var pBg = p % 2 === 0 ? '#fff5f5' : '#fff';
-      s += '<tr style="background:' + pBg + ';"><td style="padding:8px 14px;font-size:12px;font-family:Verdana,Arial,sans-serif;color:#222;">• ' + notOk[p].label + (notOk[p].obs ? ' — <i>' + notOk[p].obs + '</i>' : '') + '</td></tr>';
+      s += '<tr style="background:' + pBg + ';"><td style="padding:8px 14px;font-size:12px;font-family:Verdana,Arial,sans-serif;color:#222;">• ' + esc(notOk[p].label) + (notOk[p].obs ? ' — <i>' + esc(notOk[p].obs) + '</i>' : '') + '</td></tr>';
     }
     s += '</table></div>';
   }
@@ -1050,10 +1055,8 @@ function abrirEmailVazio() {
 }
 
 // ── RELATÓRIO COM IA (GROQ) ──────────────────────────
-// Chave padrão vazia — configure nas Configurações do app ou salve em localStorage
-var GROQ_KEY_DEFAULT = ['gsk_sTYFKzRy','3qfGq8C8zbK4WGdy','b3FYZGeyW55VFKdw','3FqAqYOAbKq4'].join('');
 function getGroqKey() {
-  return localStorage.getItem('fc_groq_key') || GROQ_KEY_DEFAULT;
+  return localStorage.getItem('fc_groq_key') || '';
 }
 
 function coletarDados() {
@@ -1183,7 +1186,7 @@ async function gerarRelatorioIA() {
       .replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>');
     content.innerHTML = '<p>' + txt + '</p>';
   } catch(e) {
-    content.innerHTML = '<p style="color:#c62828;font-weight:600">Erro ao gerar relatório: ' + e.message + '.<br>Verifique sua conexão e tente novamente.</p>';
+    content.innerHTML = '<p style="color:#c62828;font-weight:600">Erro ao gerar relatório: ' + esc(e.message) + '.<br>Verifique sua conexão e tente novamente.</p>';
   }
   btn.disabled = false; btn.textContent = '✨ Relatório com IA';
 }
@@ -1405,9 +1408,9 @@ function renderFotos() {
   fotosData.forEach(function(f, i) {
     var wrap = document.createElement('div');
     wrap.className = 'foto-thumb-wrap';
-    wrap.innerHTML = '<img src="' + f.dataUrl + '" alt="' + f.name + '" />'
+    wrap.innerHTML = '<img src="' + esc(f.dataUrl) + '" alt="' + esc(f.name) + '" />'
       + '<button class="foto-del" onclick="removerFoto(' + i + ')">✕</button>'
-      + '<div class="foto-label">' + f.name.substring(0, 20) + '</div>';
+      + '<div class="foto-label">' + esc(f.name.substring(0, 20)) + '</div>';
     grid.appendChild(wrap);
   });
   count.textContent = fotosData.length + ' foto' + (fotosData.length !== 1 ? 's' : '') + ' adicionada' + (fotosData.length !== 1 ? 's' : '');

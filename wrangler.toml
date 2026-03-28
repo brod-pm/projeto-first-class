@@ -1,0 +1,7 @@
+name = "groq-proxy"
+main = "cloudflare-worker.js"
+compatibility_date = "2024-01-01"
+
+# Após deploy, configure a chave secreta com:
+#   wrangler secret put GROQ_API_KEY
+# Nunca coloque a chave diretamente aqui.
