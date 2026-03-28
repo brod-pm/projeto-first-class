@@ -638,15 +638,16 @@
     </div>
     <div id="config-body">
       <div class="config-row">
-        <label>🔑 Chave Groq</label>
-        <input type="password" id="groq-key-input" placeholder="gsk_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" />
+        <label>🔑 Chave Groq <span style="font-weight:400;color:#aaa;font-size:11px;">ou URL do proxy</span></label>
+        <input type="password" id="groq-key-input" placeholder="gsk_xxxx… ou https://groq-proxy.workers.dev" autocomplete="off" />
       </div>
       <div class="config-hint">
-        Chave gratuita em <strong>console.groq.com</strong> → "Create API Key" (sem cartão de crédito)<br>
+        <strong>Opção 1 — Chave pessoal:</strong> console.groq.com → "Create API Key" (gratuito, sem cartão)<br>
+        <strong>Opção 2 — Proxy central:</strong> cole a URL do Cloudflare Worker (deploy via wrangler)<br>
         Modelo: <strong>llama-3.3-70b-versatile</strong> · 1.000 req/dia gratuitas
       </div>
       <div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-        <button class="config-save-btn" onclick="salvarChaveGroq()">💾 Salvar Chave</button>
+        <button class="config-save-btn" onclick="salvarChaveGroq()">💾 Salvar</button>
         <span class="config-status" id="config-status"></span>
       </div>
     </div>
@@ -1152,20 +1153,23 @@ async function gerarRelatorioIA() {
   try {
     var groqKey = getGroqKey();
     if (!groqKey) {
-      throw new Error('Chave de API não configurada. Toque em ⚙️ Configurações e cole sua chave Groq gratuita (console.groq.com).');
+      throw new Error('IA não configurada. Toque em ⚙️ Configurações e cole sua chave Groq (console.groq.com) ou a URL do proxy central.');
     }
-    var res = await fetch(
-      'https://api.groq.com/openai/v1/chat/completions',
-      { method:'POST',
-        headers:{'Content-Type':'application/json', 'Authorization':'Bearer ' + groqKey},
-        body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
-          messages:[{ role:'user', content: prompt }],
-          temperature: 0.7,
-          max_tokens: 2500
-        })
-      }
-    );
+    var fetchUrl, fetchHeaders;
+    var requestBody = {
+      model: 'llama-3.3-70b-versatile',
+      messages:[{ role:'user', content: prompt }],
+      temperature: 0.7,
+      max_tokens: 2500
+    };
+    if (isProxyUrl(groqKey)) {
+      fetchUrl = groqKey;
+      fetchHeaders = { 'Content-Type': 'application/json' };
+    } else {
+      fetchUrl = 'https://api.groq.com/openai/v1/chat/completions';
+      fetchHeaders = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + groqKey };
+    }
+    var res = await fetch(fetchUrl, { method:'POST', headers: fetchHeaders, body: JSON.stringify(requestBody) });
     if (!res.ok) {
       var errBody = await res.json().catch(function(){ return {}; });
       var errMsg = (errBody.error && errBody.error.message) ? errBody.error.message : 'Erro HTTP ' + res.status;
@@ -1211,6 +1215,10 @@ function fmtBRL(v) {
 
 
 // ── CONFIGURAÇÕES ────────────────────────────────────
+function isProxyUrl(val) {
+  return val.startsWith('https://') || val.startsWith('http://');
+}
+
 function toggleConfig() {
   var body = document.getElementById('config-body');
   var btn = document.querySelector('.config-toggle');
@@ -1219,7 +1227,8 @@ function toggleConfig() {
   if (open) {
     var saved = localStorage.getItem('fc_groq_key') || '';
     document.getElementById('groq-key-input').value = saved;
-    document.getElementById('config-status').textContent = saved ? '✅ Chave salva' : '';
+    var label = saved ? (isProxyUrl(saved) ? '✅ Proxy configurado' : '✅ Chave salva') : '';
+    document.getElementById('config-status').textContent = label;
     document.getElementById('config-status').style.color = '#2e7d32';
   }
 }
@@ -1228,17 +1237,17 @@ function salvarChaveGroq() {
   var key = document.getElementById('groq-key-input').value.trim();
   var status = document.getElementById('config-status');
   if (!key) {
-    status.textContent = '⚠️ Cole sua chave Groq acima';
+    status.textContent = '⚠️ Cole sua chave Groq ou URL do proxy';
     status.style.color = '#c62828';
     return;
   }
-  if (!key.startsWith('gsk_')) {
-    status.textContent = '⚠️ Chave inválida (deve começar com gsk_)';
+  if (!key.startsWith('gsk_') && !isProxyUrl(key)) {
+    status.textContent = '⚠️ Valor inválido (deve começar com gsk_ ou https://)';
     status.style.color = '#c62828';
     return;
   }
   localStorage.setItem('fc_groq_key', key);
-  status.textContent = '✅ Chave salva com sucesso!';
+  status.textContent = isProxyUrl(key) ? '✅ Proxy salvo com sucesso!' : '✅ Chave salva com sucesso!';
   status.style.color = '#2e7d32';
   setTimeout(function(){
     document.getElementById('config-body').classList.remove('open');
@@ -1246,14 +1255,15 @@ function salvarChaveGroq() {
   }, 1500);
 }
 
-// Mostra indicador se chave já está salva
+// Mostra indicador se chave/proxy já está salvo
 window.addEventListener('DOMContentLoaded', function() {
   if (localStorage.getItem('fc_groq_key')) {
     var hdr = document.querySelector('#config-card .card-header');
     if (hdr) {
       var dot = document.createElement('span');
       dot.style.cssText = 'display:inline-block;width:8px;height:8px;background:#4caf50;border-radius:50%;margin-left:6px;vertical-align:middle;';
-      dot.title = 'Chave Groq configurada';
+      var saved = localStorage.getItem('fc_groq_key');
+      dot.title = isProxyUrl(saved) ? 'Proxy Groq configurado' : 'Chave Groq configurada';
       hdr.insertBefore(dot, hdr.querySelector('.config-toggle'));
     }
   }
